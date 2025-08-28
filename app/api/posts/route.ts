@@ -40,7 +40,7 @@ export async function GET() {
     const posts = await Post.getAllPosts();
 
     return NextResponse.json(posts);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An error occurred while fetching posts" },
       { status: 500 }

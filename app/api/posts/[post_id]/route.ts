@@ -4,19 +4,20 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { post_id: string } }
+  { params }: { params: Promise<{ post_id: string }> }
 ) {
   await connectDB();
 
   try {
-    const post = await Post.findById(params.post_id);
+    const { post_id } = await params;
+    const post = await Post.findById(post_id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
     return NextResponse.json(post);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An error occurred while fetching the post" },
       { status: 500 }
@@ -30,14 +31,15 @@ export interface DeletePostRequestBody {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { post_id: string } }
+  { params }: { params: Promise<{ post_id: string }> }
 ) {
 
   await connectDB();
   const { userId }: DeletePostRequestBody = await request.json();
 
   try {
-    const post = await Post.findById(params.post_id);
+    const { post_id } = await params;
+    const post = await Post.findById(post_id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -50,7 +52,7 @@ export async function DELETE(
     await post.removePost();
 
     return NextResponse.json({ message: "Post deleted successfully" });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An error occurred while deleting the post" },
       { status: 500 }

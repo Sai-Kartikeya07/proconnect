@@ -6,12 +6,13 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { post_id: string } }
+  { params }: { params: Promise<{ post_id: string }> }
 ) {
   try {
     await connectDB();
+    const { post_id } = await params;
 
-    const post = await Post.findById(params.post_id);
+    const post = await Post.findById(post_id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -19,7 +20,7 @@ export async function GET(
 
     const comments = await post.getAllComments();
     return NextResponse.json(comments);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An error occurred while fetching comments" },
       { status: 500 }
@@ -34,11 +35,12 @@ export interface AddCommentRequestBody {
 
 export async function POST(
   request: Request,
-  { params }: { params: { post_id: string } }
+  { params }: { params: Promise<{ post_id: string }> }
 ) {
   const { user, text }: AddCommentRequestBody = await request.json();
   try {
-    const post = await Post.findById(params.post_id);
+    const { post_id } = await params;
+    const post = await Post.findById(post_id);
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -51,7 +53,7 @@ export async function POST(
 
     await post.commentOnPost(comment);
     return NextResponse.json({ message: "Comment added successfully" });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "An error occurred while adding comment" },
       { status: 500 }

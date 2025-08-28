@@ -98,6 +98,7 @@ import { Button } from "./ui/button";
 import { ImageIcon, XIcon, PenSquare } from "lucide-react";
 import { useRef, useState } from "react";
 import createPostAction from "@/actions/createPostAction";
+import Image from "next/image";
 
 function PostForm() {
 
@@ -184,9 +185,11 @@ function PostForm() {
 
         {preview && (
           <div className="mt-3">
-            <img 
+            <Image 
               src={preview} 
               alt="Preview" 
+              width={500}
+              height={300}
               className="w-full object-cover rounded-md border border-[#3f3f46]" 
             />
           </div>
