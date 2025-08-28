@@ -270,6 +270,32 @@ function CommentSection({ postId }: { postId: string }) {
     }
   };
 
+  const deleteComment = async (commentId: string) => {
+    if (!user?.id) return;
+
+    console.log("Attempting to delete comment:", { commentId, userId: user.id });
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (response.ok) {
+        // Remove comment from local state
+        setComments(comments.filter(comment => comment._id !== commentId));
+      } else {
+        const errorData = await response.json();
+        console.error("Error deleting comment:", errorData.error);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
   // Fetch comments when component mounts
   React.useEffect(() => {
     fetchComments();
@@ -297,25 +323,43 @@ function CommentSection({ postId }: { postId: string }) {
 
       {/* Comments List */}
       <div className="space-y-3">
-        {comments.map((comment) => (
-          <div key={comment._id} className="bg-[#27272a] rounded-lg p-3">
-            <div className="flex items-center space-x-2 mb-2">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={comment.user.userImage} />
-                <AvatarFallback className="text-xs">
-                  {comment.user.firstName?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-white">
-                {comment.user.firstName} {comment.user.lastName}
-              </span>
-              <span className="text-xs text-gray-400">
-                <ReactTimeago date={new Date(comment.createdAt)} />
-              </span>
+        {comments.map((comment) => {
+          const isCommentAuthor = user?.id === comment.user.userId;
+          
+          return (
+            <div key={comment._id} className="bg-[#27272a] rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={comment.user.userImage} />
+                    <AvatarFallback className="text-xs">
+                      {comment.user.firstName?.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-white">
+                    {comment.user.firstName} {comment.user.lastName}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    <ReactTimeago date={new Date(comment.createdAt)} />
+                  </span>
+                </div>
+                
+                {/* Delete Button for Comment Author */}
+                {isCommentAuthor && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteComment(comment._id)}
+                    className="text-red-500 hover:text-red-700 p-1 h-auto"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                )}
+              </div>
+              <p className="text-sm text-gray-300">{comment.text}</p>
             </div>
-            <p className="text-sm text-gray-300">{comment.text}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
