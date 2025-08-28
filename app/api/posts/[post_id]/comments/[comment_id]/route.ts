@@ -45,9 +45,9 @@ export async function DELETE(
 
     // Remove comment reference from post
     const post = await Post.findById(post_id);
-    if (post) {
-      post.comments = post.comments.filter((commentRef: mongoose.Types.ObjectId) => commentRef.toString() !== comment_id);
-      await post.save();
+    if (post && post.comments) {
+      // Use pull to remove the comment reference from the array
+      await post.updateOne({ $pull: { comments: comment_id } });
     }
 
     return NextResponse.json({ message: "Comment deleted successfully" });
