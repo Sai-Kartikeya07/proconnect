@@ -8,6 +8,7 @@ export interface IPostBase {
     imageUrl?: string;
     comments?: IComment[];
     likes?: string[];
+    dislikes?: string[];
 }
 
 export interface IPost extends Document, IPostBase {
@@ -18,12 +19,12 @@ export interface IPost extends Document, IPostBase {
 interface IPostMethods {
     likePost(userId: string): Promise<void>;
     unlikePost(userId: string): Promise<void>;
+    dislikePost(userId: string): Promise<void>;
+    undislikePost(userId: string): Promise<void>;
     commentOnPost(comment: ICommentBase): Promise<void>;
     getAllComments(): Promise<IComment[]>;
     removePost(): Promise<void>;
 }
-
-
 
 interface IPostStatics {
     getAllPosts(): Promise<IPostDocument[]>;
@@ -44,7 +45,8 @@ const PostSchema = new Schema<IPostDocument>(
     text: { type: String, required: true },
     imageUrl: { type: String },
     comments: { type: [Schema.Types.ObjectId], ref: "Comment", default: [] },
-    likes: { type: [String] },
+    likes: { type: [String], default: [] },
+    dislikes: { type: [String], default: [] },
   },
   {
     timestamps: true,
@@ -53,6 +55,9 @@ const PostSchema = new Schema<IPostDocument>(
 
 PostSchema.methods.likePost = async function (userId: string) {
   try {
+    // Remove from dislikes if user previously disliked
+    await this.updateOne({ $pull: { dislikes: userId } });
+    // Add to likes
     await this.updateOne({ $addToSet: { likes: userId } });
   } catch (error) {
     console.log("error when liking post", error);
@@ -67,8 +72,24 @@ PostSchema.methods.unlikePost = async function (userId: string) {
   }
 };
 
+PostSchema.methods.dislikePost = async function (userId: string) {
+  try {
+    // Remove from likes if user previously liked
+    await this.updateOne({ $pull: { likes: userId } });
+    // Add to dislikes
+    await this.updateOne({ $addToSet: { dislikes: userId } });
+  } catch (error) {
+    console.log("error when disliking post", error);
+  }
+};
 
-
+PostSchema.methods.undislikePost = async function (userId: string) {
+  try {
+    await this.updateOne({ $pull: { dislikes: userId } });
+  } catch (error) {
+    console.log("error when undisliking post", error);
+  }
+};
 
 PostSchema.methods.removePost = async function () {
   try {
@@ -88,12 +109,10 @@ PostSchema.methods.commentOnPost = async function (commentToAdd: ICommentBase) {
   }
 };
 
-
 PostSchema.methods.getAllComments = async function () {
   try {
     await this.populate({
       path: "comments",
-
       options: { sort: { createdAt: -1 } },
     });
     return this.comments;
@@ -101,7 +120,6 @@ PostSchema.methods.getAllComments = async function () {
     console.log("error when getting all comments", error);
   }
 };
-
 
 PostSchema.statics.getAllPosts = async function (): Promise<IPostDocument[]> {
   try {
@@ -111,7 +129,6 @@ PostSchema.statics.getAllPosts = async function (): Promise<IPostDocument[]> {
         path: "comments",
         options: { sort: { createdAt: -1 } },
       })
-      // remove populate("likes") because likes is string array
       .lean(); // lean returns plain JS objects
 
     return posts.map((post: any) => ({

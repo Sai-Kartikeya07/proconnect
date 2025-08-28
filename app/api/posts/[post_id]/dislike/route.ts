@@ -16,17 +16,17 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const likes = post.likes;
-    return NextResponse.json(likes);
+    const dislikes = post.dislikes;
+    return NextResponse.json(dislikes);
   } catch {
     return NextResponse.json(
-      { error: "An error occurred while fetching likes" },
+      { error: "An error occurred while fetching dislikes" },
       { status: 500 }
     );
   }
 }
 
-export interface LikePostRequestBody {
+export interface DislikePostRequestBody {
   userId: string;
 }
 
@@ -36,7 +36,7 @@ export async function POST(
 ) {
   await connectDB();
 
-  const { userId }: LikePostRequestBody = await request.json();
+  const { userId }: DislikePostRequestBody = await request.json();
 
   try {
     const { post_id } = await params;
@@ -46,19 +46,19 @@ export async function POST(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check if user already liked
-    const isLiked = post.likes?.includes(userId);
+    // Check if user already disliked
+    const isDisliked = post.dislikes?.includes(userId);
     
-    if (isLiked) {
-      await post.unlikePost(userId);
-      return NextResponse.json({ message: "Post unliked successfully" });
+    if (isDisliked) {
+      await post.undislikePost(userId);
+      return NextResponse.json({ message: "Post undisliked successfully" });
     } else {
-      await post.likePost(userId);
-      return NextResponse.json({ message: "Post liked successfully" });
+      await post.dislikePost(userId);
+      return NextResponse.json({ message: "Post disliked successfully" });
     }
   } catch {
     return NextResponse.json(
-      { error: "An error occurred while liking the post" },
+      { error: "An error occurred while disliking the post" },
       { status: 500 }
     );
   }
