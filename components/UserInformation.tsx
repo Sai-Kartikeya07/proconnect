@@ -1,20 +1,42 @@
-import { currentUser } from '@clerk/nextjs/server'
+"use client";
+import { useUser } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 import { Button } from './ui/button'
+import React, { useEffect, useState } from "react";
 
-async function UserInformation() {
-  const user = await currentUser();
-
+function UserInformation() {
+  const { user } = useUser();
+  useEffect(() => {
+    if (user?.id) {
+      fetch("/api/sync-user", { method: "POST" });
+    }
+  }, [user?.id]);
   const firstName = user?.firstName;
   const lastName = user?.lastName;
   const imageUrl = user?.imageUrl;
+  const [postCount, setPostCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/user-info?userId=${user.id}`)
+        .then(res => res.ok ? res.json() : { postCount: 0, commentCount: 0 })
+        .then(data => {
+          setPostCount(data.postCount ?? 0);
+          setCommentCount(data.commentCount ?? 0);
+        })
+        .catch(() => {
+          setPostCount(0);
+          setCommentCount(0);
+        });
+    }
+  }, [user?.id]);
 
   return (
     <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden shadow-md">
       {/* Header Section with gradient */}
       <div className="h-20 bg-gradient-to-r from-[#27272a] to-[#3f3f46]" />
-
       {/* Profile Content */}
       <div className="flex flex-col items-center -mt-10 px-4 pb-4">
         <Avatar className="h-20 w-20 border-4 border-[#18181b] rounded-full shadow">
@@ -27,7 +49,6 @@ async function UserInformation() {
             {firstName?.charAt(0)}{lastName?.charAt(0)}
           </AvatarFallback>
         </Avatar>
-
         <SignedIn>
           <div className="mt-3 text-center">
             <p className="font-semibold text-white text-lg">
@@ -38,7 +59,6 @@ async function UserInformation() {
             </p>
           </div>
         </SignedIn>
-
         <SignedOut>
           <div className="mt-3 text-center space-y-2">
             <p className="font-semibold text-white">You are not signed in</p>
@@ -49,19 +69,17 @@ async function UserInformation() {
             </Button>
           </div>
         </SignedOut>
-
         {/* Divider */}
         <hr className="w-full border-[#3f3f46] my-4" />
-
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 text-center w-full">
           <div>
             <p className="text-[#a1a1aa] text-sm">Posts</p>
-            <p className="font-semibold text-white">0</p>
+            <p className="font-semibold text-white">{postCount}</p>
           </div>
           <div>
             <p className="text-[#a1a1aa] text-sm">Comments</p>
-            <p className="font-semibold text-white">0</p>
+            <p className="font-semibold text-white">{commentCount}</p>
           </div>
         </div>
       </div>

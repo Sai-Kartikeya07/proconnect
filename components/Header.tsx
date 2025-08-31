@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image';
 import { HomeIcon, MessagesSquare, SearchIcon } from 'lucide-react'
 import Link from 'next/link'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
@@ -45,6 +46,11 @@ function Header() {
         <Link href="/" className="pill">
           <MessagesSquare className="h-5" />
           <span>Messaging</span>
+        </Link>
+
+        <Link href="/following" className="pill flex items-center gap-1">
+          <Image src="/globe.svg" alt="Following" width={20} height={20} style={{ filter: 'invert(80%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%)' }} />
+          <span>Following</span>
         </Link>
 
         <SignedIn>

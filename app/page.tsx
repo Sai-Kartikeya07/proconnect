@@ -1,6 +1,7 @@
 import PostFeed from "@/components/PostFeed";
 import PostForm from "@/components/PostForm";
 import UserInformation from "@/components/UserInformation";
+import JobsSection from "@/components/JobsSection";
 import sql from "@/lib/neon";
 import AuthWrapper from "@/components/AuthWrapper";
 
@@ -39,6 +40,7 @@ async function AuthenticatedHome() {
       {/* Right Sidebar */}
       <aside className="hidden md:block md:col-span-1 space-y-4">
         <UserInformation />
+        <JobsSection />
         {/* Add trending topics, community list, ads, etc. */}
       </aside>
     </div>
