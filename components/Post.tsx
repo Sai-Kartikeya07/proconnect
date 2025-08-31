@@ -1,6 +1,5 @@
 "use client";
 
-import { IPostDocument } from "@/mongodb/models/post";
 import { useUser } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "./ui/badge";
@@ -12,9 +11,9 @@ import Image from "next/image";
 import { useState, useCallback } from "react";
 import React from "react";
 
-function Post({ post }: { post: IPostDocument }) {
+function Post({ post }: { post: any }) {
   const { user } = useUser();
-  const isAuthor = user?.id === post.user.userId;
+  const isAuthor = user?.id === post.user_id;
   
   const [likes, setLikes] = useState<string[]>(post.likes || []);
   const [dislikes, setDislikes] = useState<string[]>(post.dislikes || []);
@@ -26,7 +25,7 @@ function Post({ post }: { post: IPostDocument }) {
     if (!user?.id) return;
 
     try {
-      const response = await fetch(`/api/posts/${post._id}/like`, {
+  const response = await fetch(`/api/posts/${post.id}/like`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,7 +56,7 @@ function Post({ post }: { post: IPostDocument }) {
     if (!user?.id) return;
 
     try {
-      const response = await fetch(`/api/posts/${post._id}/dislike`, {
+  const response = await fetch(`/api/posts/${post.id}/dislike`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,17 +92,17 @@ function Post({ post }: { post: IPostDocument }) {
       {/* Post Header */}
       <div className="flex p-4 space-x-4 items-start">
         <Avatar className="h-16 w-16 rounded-full border-4 border-[#18181b] shadow">
-          <AvatarImage src={post.user.userImage} />
+          <AvatarImage src={post.user_image} />
           <AvatarFallback>
-            {post.user.firstName?.charAt(0)}
-            {post.user.lastName?.charAt(0)}
+            {post.first_name?.charAt(0)}
+            {post.last_name?.charAt(0)}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex justify-between flex-1">
           <div>
             <p className="font-semibold text-white">
-              {post.user.firstName} {post.user.lastName}{" "}
+              {post.first_name} {post.last_name}{" "}
               {isAuthor && (
                 <Badge className="ml-2" variant="secondary">
                   Author
@@ -111,11 +110,11 @@ function Post({ post }: { post: IPostDocument }) {
               )}
             </p>
             <p className="text-xs text-gray-400">
-              @{post.user.firstName}
-              {post.user.firstName}-{post.user.userId.toString().slice(-4)}
+              @{post.first_name}
+              {post.first_name}-{post.user_id?.toString().slice(-4)}
             </p>
             <p className="text-xs text-gray-400">
-              <ReactTimeago date={new Date(post.createdAt)} />
+              <ReactTimeago date={new Date(post.created_at)} />
             </p>
           </div>
 
@@ -123,7 +122,7 @@ function Post({ post }: { post: IPostDocument }) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => deletePostAction(post._id as string)}
+              onClick={() => deletePostAction(post.id as string)}
               className="text-red-500 hover:text-red-700"
             >
               <Trash2 size={16} />
@@ -137,9 +136,9 @@ function Post({ post }: { post: IPostDocument }) {
         <p className="text-white mb-4">{post.text}</p>
 
         {/* Post Image */}
-        {post.imageUrl && (
+        {post.image_url && (
           <Image
-            src={post.imageUrl}
+            src={post.image_url}
             alt="Post Image"
             width={500}
             height={500}
@@ -201,7 +200,7 @@ function Post({ post }: { post: IPostDocument }) {
         {/* Comments Section */}
         {showComments && (
           <div className="mt-4 pt-4 border-t border-[#3f3f46]">
-            <CommentSection postId={post._id as string} />
+            <CommentSection postId={post.id as string} />
           </div>
         )}
       </div>
@@ -212,17 +211,7 @@ function Post({ post }: { post: IPostDocument }) {
 // Comment Section Component
 function CommentSection({ postId }: { postId: string }) {
   const { user } = useUser();
-  const [comments, setComments] = useState<Array<{
-    _id: string;
-    user: {
-      userId: string;
-      userImage: string;
-      firstName: string;
-      lastName: string;
-    };
-    text: string;
-    createdAt: string;
-  }>>([]);
+  const [comments, setComments] = useState<Array<any>>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -324,32 +313,30 @@ function CommentSection({ postId }: { postId: string }) {
       {/* Comments List */}
       <div className="space-y-3">
         {comments.map((comment) => {
-          const isCommentAuthor = user?.id === comment.user.userId;
-          
+          const isCommentAuthor = user?.id === comment.user_id;
           return (
-            <div key={comment._id} className="bg-[#27272a] rounded-lg p-3">
+            <div key={comment.id || comment._id} className="bg-[#27272a] rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={comment.user.userImage} />
+                    <AvatarImage src={comment.user_image || undefined} />
                     <AvatarFallback className="text-xs">
-                      {comment.user.firstName?.charAt(0)}
+                      {comment.first_name ? comment.first_name.charAt(0) : "?"}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium text-white">
-                    {comment.user.firstName} {comment.user.lastName}
+                    {comment.first_name} {comment.last_name}
                   </span>
                   <span className="text-xs text-gray-400">
-                    <ReactTimeago date={new Date(comment.createdAt)} />
+                    <ReactTimeago date={new Date(comment.created_at || comment.createdAt)} />
                   </span>
                 </div>
-                
                 {/* Delete Button for Comment Author */}
                 {isCommentAuthor && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => deleteComment(comment._id)}
+                    onClick={() => deleteComment(comment.id || comment._id)}
                     className="text-red-500 hover:text-red-700 p-1 h-auto"
                   >
                     <Trash2 size={14} />

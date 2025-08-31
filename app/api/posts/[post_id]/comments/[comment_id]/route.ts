@@ -1,61 +1,22 @@
-import connectDB from "@/mongodb/db";
-import { Post } from "@/mongodb/models/post";
-import { Comment } from "@/mongodb/models/comment";
+import sql from "@/lib/neon";
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
-
-export interface DeleteCommentRequestBody {
-  userId: string;
-}
-
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ post_id: string; comment_id: string }> }
-) {
-  await connectDB();
-
+export async function DELETE(request: Request, context: { params: { post_id: string; comment_id: string } }) {
   try {
-    const { post_id, comment_id } = await params;
+    const params = await context.params;
+    const { post_id, comment_id } = params;
     const { userId } = await request.json();
-
-    console.log("Delete comment request:", { post_id, comment_id, userId });
-
-    // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(comment_id)) {
-      console.log("Invalid comment ID format:", comment_id);
-      return NextResponse.json({ error: "Invalid comment ID format" }, { status: 400 });
-    }
-
     // Find the comment
-    const comment = await Comment.findById(comment_id);
-    
-    console.log("Found comment:", comment ? "Yes" : "No");
-    
-    if (!comment) {
+    const result = await sql`SELECT * FROM comments WHERE id = ${comment_id} AND post_id = ${post_id};`;
+    if (result.length === 0) {
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
-
-    // Check if user is the author of the comment
-    if (comment.user.userId !== userId) {
-      return NextResponse.json({ error: "Unauthorized to delete this comment" }, { status: 403 });
+    // Only allow author to delete
+    if (result[0].user_id !== userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
-
-    // Delete the comment
-    await Comment.deleteCommentById(comment_id);
-
-    // Remove comment reference from post
-    const post = await Post.findById(post_id);
-    if (post && post.comments) {
-      // Use pull to remove the comment reference from the array
-      await post.updateOne({ $pull: { comments: comment_id } });
-    }
-
+    await sql`DELETE FROM comments WHERE id = ${comment_id} AND post_id = ${post_id};`;
     return NextResponse.json({ message: "Comment deleted successfully" });
   } catch (error) {
-    console.error("Error in delete comment route:", error);
-    return NextResponse.json(
-      { error: "An error occurred while deleting the comment" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An error occurred while deleting comment" }, { status: 500 });
   }
 }

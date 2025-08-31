@@ -1,23 +1,18 @@
-import connectDB from "@/mongodb/db";
-import { Post } from "@/mongodb/models/post";
+import sql from "@/lib/neon";
 import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ post_id: string }> }
 ) {
-  await connectDB();
 
   try {
     const { post_id } = await params;
-    const post = await Post.findById(post_id);
 
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
 
-    const dislikes = post.dislikes;
-    return NextResponse.json(dislikes);
+      // Get dislikes from dislikes table
+      const dislikes = await sql`SELECT user_id FROM dislikes WHERE post_id = ${post_id};`;
+      return NextResponse.json(dislikes.map(dislike => dislike.user_id));
   } catch {
     return NextResponse.json(
       { error: "An error occurred while fetching dislikes" },
@@ -34,28 +29,21 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ post_id: string }> }
 ) {
-  await connectDB();
 
   const { userId }: DislikePostRequestBody = await request.json();
 
   try {
     const { post_id } = await params;
-    const post = await Post.findById(post_id);
 
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
 
     // Check if user already disliked
-    const isDisliked = post.dislikes?.includes(userId);
-    
-    if (isDisliked) {
-      await post.undislikePost(userId);
-      return NextResponse.json({ message: "Post undisliked successfully" });
-    } else {
-      await post.dislikePost(userId);
+      const existing = await sql`SELECT * FROM dislikes WHERE post_id = ${post_id} AND user_id = ${userId};`;
+      if (existing.length > 0) {
+        await sql`DELETE FROM dislikes WHERE post_id = ${post_id} AND user_id = ${userId};`;
+        return NextResponse.json({ message: "Post undisliked successfully" });
+      }
+      await sql`INSERT INTO dislikes (post_id, user_id) VALUES (${post_id}, ${userId});`;
       return NextResponse.json({ message: "Post disliked successfully" });
-    }
   } catch {
     return NextResponse.json(
       { error: "An error occurred while disliking the post" },

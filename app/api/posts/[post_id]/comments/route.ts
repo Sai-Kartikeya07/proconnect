@@ -1,6 +1,4 @@
-import connectDB from "@/mongodb/db";
-import { ICommentBase } from "@/mongodb/models/comment";
-import { Post } from "@/mongodb/models/post";
+import sql from "@/lib/neon";
 import { IUser } from "@/types/user";
 import { NextResponse } from "next/server";
 
@@ -9,16 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ post_id: string }> }
 ) {
   try {
-    await connectDB();
     const { post_id } = await params;
-
-    const post = await Post.findById(post_id);
-
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
-
-    const comments = await post.getAllComments();
+    // Get comments for post from PostgreSQL
+    const comments = await sql`SELECT * FROM comments WHERE post_id = ${post_id} ORDER BY created_at ASC;`;
     return NextResponse.json(comments);
   } catch {
     return NextResponse.json(
@@ -40,18 +31,11 @@ export async function POST(
   const { user, text }: AddCommentRequestBody = await request.json();
   try {
     const { post_id } = await params;
-    const post = await Post.findById(post_id);
-
-    if (!post) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 });
-    }
-
-    const comment: ICommentBase = {
-      user,
-      text,
-    };
-
-    await post.commentOnPost(comment);
+    // Insert comment into PostgreSQL
+    await sql`
+      INSERT INTO comments (post_id, user_id, user_image, first_name, last_name, text)
+      VALUES (${post_id}, ${user.userId}, ${user.userImage}, ${user.firstName}, ${user.lastName}, ${text});
+    `;
     return NextResponse.json({ message: "Comment added successfully" });
   } catch {
     return NextResponse.json(
