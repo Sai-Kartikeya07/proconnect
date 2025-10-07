@@ -5,9 +5,11 @@ import AuthWrapper from "@/components/AuthWrapper";
 import UserProfileClient from "@/components/UserProfileClient";
 import { IEducation, IUserProfile } from "@/types/profile";
 
-async function AuthenticatedUserProfilePage({ params }: { params: { user_id: string } }) {
+interface ProfilePageParams { user_id: string }
+
+async function AuthenticatedUserProfilePage(props: any) {
   const { userId: currentUserId } = await auth();
-  const { user_id } = params;
+  const { user_id } = (props.params as ProfilePageParams);
 
   const userResult = await sql`
     SELECT id, first_name, image_url, email, created_at
@@ -98,10 +100,10 @@ async function AuthenticatedUserProfilePage({ params }: { params: { user_id: str
   );
 }
 
-export default function UserProfilePage({ params }: { params: { user_id: string } }) {
+export default function UserProfilePage(props: any) {
   return (
     <AuthWrapper>
-      <AuthenticatedUserProfilePage params={params} />
+      <AuthenticatedUserProfilePage params={props.params} />
     </AuthWrapper>
   );
 }
