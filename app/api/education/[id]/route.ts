@@ -3,17 +3,19 @@ import { auth } from "@clerk/nextjs/server";
 import sql from "@/lib/neon";
 
 // GET /api/education/[id] - Get specific education record
+// In Next.js 15 Route Handlers, the second argument should be typed as
+// { params: { <segments> } } but not a separate structural type if it conflicts.
+// We keep it simple and allow any object shape while extracting 'id'.
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { id } = params;
+    const { id } = context.params;
     const education = await sql`
       SELECT * FROM education 
       WHERE id = ${id} AND user_id = ${userId};
@@ -39,15 +41,14 @@ export async function GET(
 // PUT /api/education/[id] - Update education record
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { id } = params;
+    const { id } = context.params;
     const {
       institution,
       degree,
@@ -107,16 +108,15 @@ export async function PUT(
 
 // DELETE /api/education/[id] - Delete education record
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { id } = params;
+    const { id } = context.params;
     const deletedEducation = await sql`
       DELETE FROM education 
       WHERE id = ${id} AND user_id = ${userId}
