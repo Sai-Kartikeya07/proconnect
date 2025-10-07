@@ -36,9 +36,9 @@ export default function MessagesPageClient({ initialConversations }: MessagesPag
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 will-animate fade-up" style={{animationDelay:'0ms'}}>
         <div className="flex items-center space-x-4">
-          <MessageCircle className="h-10 w-10 text-blue-500" />
+          <MessageCircle className="h-10 w-10 text-purple-500" />
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Messages</h1>
             <p className="text-gray-400 text-lg">Connect with people you follow</p>
@@ -52,7 +52,7 @@ export default function MessagesPageClient({ initialConversations }: MessagesPag
       </div>
 
       {/* Messages Container */}
-      <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden min-h-[600px]">
+  <div className="surface-card glow overflow-hidden min-h-[600px] will-animate fade-up" style={{animationDelay:'120ms'}}>
         <div className="grid grid-cols-1 lg:grid-cols-3 h-[600px]">
           {/* Conversations List */}
           <div className={`lg:col-span-1 border-r border-[#3f3f46] ${selectedConversation ? 'hidden lg:block' : ''}`}>
@@ -90,7 +90,7 @@ export default function MessagesPageClient({ initialConversations }: MessagesPag
 
       {/* Empty State */}
       {conversations.length === 0 && (
-        <div className="text-center py-16">
+        <div className="text-center py-16 will-animate fade-up" style={{animationDelay:'240ms'}}>
           <MessageCircle className="h-20 w-20 text-gray-500 mx-auto mb-6" />
           <h3 className="text-xl font-medium text-white mb-3">
             No conversations yet

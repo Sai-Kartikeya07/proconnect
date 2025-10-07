@@ -14,29 +14,40 @@ function UserInformation() {
       fetch("/api/sync-user", { method: "POST" });
     }
   }, [user?.id]);
-  const firstName = user?.firstName;
-  const lastName = user?.lastName;
+  const [dbFirstName, setDbFirstName] = useState<string | null>(null);
+  const [dbLastName, setDbLastName] = useState<string | null>(null);
+  const firstName = dbFirstName ?? user?.firstName ?? null;
+  const lastName = dbLastName ?? user?.lastName ?? null;
   const imageUrl = user?.imageUrl;
   const [postCount, setPostCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
-    if (user?.id) {
-      fetch(`/api/user-info?userId=${user.id}`)
-        .then(res => res.ok ? res.json() : { postCount: 0, commentCount: 0 })
-        .then(data => {
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const [statsRes, basicRes] = await Promise.all([
+          fetch(`/api/user-info?userId=${user.id}`),
+          fetch('/api/users/me-basic')
+        ]);
+        if (statsRes.ok) {
+          const data = await statsRes.json();
           setPostCount(data.postCount ?? 0);
           setCommentCount(data.commentCount ?? 0);
-        })
-        .catch(() => {
-          setPostCount(0);
-          setCommentCount(0);
-        });
-    }
+        }
+        if (basicRes.ok) {
+          const basic = await basicRes.json();
+          if (basic.first_name) setDbFirstName(basic.first_name);
+          if (basic.last_name) setDbLastName(basic.last_name);
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
   }, [user?.id]);
 
   return (
-    <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden shadow-md">
+  <div className="surface-card glow overflow-hidden">{/* Animation applied by page wrapper */}
       {/* Header Section with gradient */}
       <div className="h-20 bg-gradient-to-r from-[#27272a] to-[#3f3f46]" />
       {/* Profile Content */}
@@ -53,10 +64,10 @@ function UserInformation() {
         </Avatar>
         <SignedIn>
           <div className="mt-3 text-center">
-            <p className="font-semibold text-white text-lg">
+            <p className="typ-h text-white">
               {firstName} {lastName}
             </p>
-            <p className="text-xs text-[#a1a1aa] mt-1 bg-[#27272a] px-2 py-0.5 rounded-full">
+            <p className="typ-small text-[#a1a1aa] mt-1 bg-[#27272a] px-2 py-0.5 rounded-full">
               @{firstName}{lastName}-{user?.id?.slice(-4)}
             </p>
           </div>
@@ -90,12 +101,12 @@ function UserInformation() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 text-center w-full">
           <div>
-            <p className="text-[#a1a1aa] text-sm">Posts</p>
-            <p className="font-semibold text-white">{postCount}</p>
+            <p className="typ-small text-[#a1a1aa]">Posts</p>
+            <p className="typ-accent text-white">{postCount}</p>
           </div>
           <div>
-            <p className="text-[#a1a1aa] text-sm">Comments</p>
-            <p className="font-semibold text-white">{commentCount}</p>
+            <p className="typ-small text-[#a1a1aa]">Comments</p>
+            <p className="typ-accent text-white">{commentCount}</p>
           </div>
         </div>
       </div>

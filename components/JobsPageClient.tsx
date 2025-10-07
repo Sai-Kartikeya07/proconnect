@@ -68,9 +68,9 @@ export default function JobsPageClient({ initialJobs }: JobsPageClientProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 will-animate fade-up" style={{animationDelay:'0ms'}}>
         <div className="flex items-center space-x-4">
-          <Briefcase className="h-10 w-10 text-blue-500" />
+          <Briefcase className="h-10 w-10 text-purple-500" />
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Job Board</h1>
             <p className="text-gray-400 text-lg">Discover opportunities and post job openings</p>
@@ -91,7 +91,7 @@ export default function JobsPageClient({ initialJobs }: JobsPageClientProps) {
 
       {/* Job Form */}
       {showJobForm && (
-        <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] p-8">
+  <div className="surface-card glow p-8 will-animate fade-up" style={{animationDelay:'100ms'}}>
           <JobForm
             editingJob={editingJob}
             onJobCreated={handleJobCreated}
@@ -102,7 +102,7 @@ export default function JobsPageClient({ initialJobs }: JobsPageClientProps) {
       )}
 
       {/* Jobs List */}
-      <div className="space-y-6">
+      <div className="space-y-6 will-animate fade-up" style={{animationDelay:'150ms'}}>
         <div className="flex items-center justify-between py-2">
           <h2 className="text-2xl font-semibold text-white">
             Available Jobs ({jobs.length})
@@ -130,14 +130,15 @@ export default function JobsPageClient({ initialJobs }: JobsPageClientProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {jobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                currentUserId={user?.id}
-                onEdit={handleEditJob}
-                onDelete={handleJobDeleted}
-              />
+            {jobs.map((job, idx) => (
+              <div key={job.id} className="will-animate fade-up" style={{animationDelay: `${Math.min(200 + idx*50, 500)}ms`}}>
+                <JobCard
+                  job={job}
+                  currentUserId={user?.id}
+                  onEdit={handleEditJob}
+                  onDelete={handleJobDeleted}
+                />
+              </div>
             ))}
           </div>
         )}

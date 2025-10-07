@@ -14,7 +14,7 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-sm lg:w-96">
           <div className="text-center lg:text-left mb-8">
             <h1 className="text-4xl font-bold text-white mb-4">
-              Welcome to <span className="text-blue-500">ProConnect</span>
+              Welcome to <span className="text-purple-500">ProConnect</span>
             </h1>
             <p className="text-lg text-gray-300 mb-8">
               Connect, share, and engage with your community. Join thousands of users sharing their thoughts and experiences.
@@ -23,19 +23,19 @@ export default function LoginPage() {
             {/* Features */}
             <div className="space-y-4 mb-8">
               <div className="flex items-center space-x-3">
-                <Users className="text-blue-500" size={20} />
+                <Users className="text-purple-500" size={20} />
                 <span className="text-gray-300">Connect with friends and communities</span>
               </div>
               <div className="flex items-center space-x-3">
-                <MessageCircle className="text-blue-500" size={20} />
+                <MessageCircle className="text-purple-500" size={20} />
                 <span className="text-gray-300">Share your thoughts and stories</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Heart className="text-blue-500" size={20} />
+                <Heart className="text-purple-500" size={20} />
                 <span className="text-gray-300">Engage with meaningful content</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Share2 className="text-blue-500" size={20} />
+                <Share2 className="text-purple-500" size={20} />
                 <span className="text-gray-300">Build your digital presence</span>
               </div>
             </div>
@@ -46,7 +46,7 @@ export default function LoginPage() {
       {/* Right Side - Login CTA */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 lg:px-8 lg:w-1/2">
         <div className="w-full max-w-sm lg:w-96 text-center">
-          <div className="bg-[#18181b] rounded-2xl p-8 border border-[#3f3f46] shadow-2xl">
+          <div className="surface-card glow p-8 shadow-2xl">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to Connect?</h2>
             <p className="text-gray-400 mb-8">
               Join the ProConnect community and start sharing your stories with the world.
@@ -63,7 +63,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <span 
                 onClick={() => router.push('/sign-up')}
-                className="text-blue-500 cursor-pointer hover:text-blue-400 font-medium"
+                className="text-purple-500 cursor-pointer hover:text-purple-400 font-medium"
               >
                 Sign up
               </span>

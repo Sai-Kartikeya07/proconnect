@@ -63,7 +63,7 @@ export default function JobCard({ job, currentUserId, onEdit, onDelete }: JobCar
   };
 
   return (
-    <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] p-8 hover:border-blue-500/30 transition-all">
+  <div className="surface-card glow p-8 transition-all hover:shadow-lg">
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center space-x-4">
@@ -87,7 +87,7 @@ export default function JobCard({ job, currentUserId, onEdit, onDelete }: JobCar
               size="default"
               variant="outline"
               onClick={() => onEdit(job)}
-              className="text-blue-400 hover:text-blue-300 px-4 py-2"
+              className="text-neutral-400 hover:text-purple-400 px-4 py-2"
             >
               <Edit className="h-4 w-4" />
             </Button>

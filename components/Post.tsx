@@ -88,7 +88,7 @@ function Post({ post }: { post: any }) {
   };
 
   return (
-    <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] mb-4 shadow-md overflow-hidden">
+  <div className="surface-card glow mb-4 overflow-hidden">
       {/* Post Header */}
       <div className="flex p-4 space-x-4 items-start">
         <Avatar className="h-16 w-16 rounded-full border-4 border-[#18181b] shadow">
@@ -101,7 +101,7 @@ function Post({ post }: { post: any }) {
 
         <div className="flex justify-between flex-1">
           <div>
-            <p className="font-semibold text-white">
+            <p className="typ-sub text-white font-semibold">
               {post.first_name} {post.last_name}{" "}
               {isAuthor && (
                 <Badge className="ml-2" variant="secondary">
@@ -109,11 +109,11 @@ function Post({ post }: { post: any }) {
                 </Badge>
               )}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="typ-small text-gray-400">
               @{post.first_name}
               {post.first_name}-{post.user_id?.toString().slice(-4)}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="typ-small text-gray-400">
               <ReactTimeago date={new Date(post.created_at)} />
             </p>
           </div>
@@ -164,32 +164,28 @@ function Post({ post }: { post: any }) {
               size="sm"
               onClick={handleLike}
               className={`flex items-center space-x-2 ${
-                isLiked ? "text-blue-500" : "text-gray-400 hover:text-blue-500"
+                isLiked ? "text-purple-400" : "text-gray-400 hover:text-purple-400"
               }`}
             >
               <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
               <span>Like</span>
             </Button>
-
-            {/* Dislike Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDislike}
               className={`flex items-center space-x-2 ${
-                isDisliked ? "text-red-500" : "text-gray-400 hover:text-red-500"
+                isDisliked ? "text-purple-400" : "text-gray-400 hover:text-purple-400"
               }`}
             >
               <ThumbsDown size={18} fill={isDisliked ? "currentColor" : "none"} />
               <span>Dislike</span>
             </Button>
-
-            {/* Comment Button */}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleComment}
-              className="flex items-center space-x-2 text-gray-400 hover:text-blue-500"
+              className="flex items-center space-x-2 text-gray-400 hover:text-purple-400"
             >
               <MessageCircle size={18} />
               <span>Comment</span>
@@ -299,7 +295,7 @@ function CommentSection({ postId }: { postId: string }) {
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Write a comment..."
-          className="flex-1 bg-[#27272a] border border-[#3f3f46] rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+          className="flex-1 bg-[#27272a] border border-[#3f3f46] rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
         />
         <Button
           onClick={addComment}

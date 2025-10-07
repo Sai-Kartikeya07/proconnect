@@ -6,36 +6,34 @@ import { Button } from "./ui/button";
 
 function JobsSection() {
   return (
-    <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden shadow-md mt-6">
-      <div className="h-16 bg-gradient-to-r from-[#27272a] to-[#3f3f46] flex items-center justify-center">
-        <div className="flex items-center space-x-3">
+  <div className="surface-card glow hoverable overflow-hidden mt-6">{/* Animation applied by page wrapper */}
+      {/* Header Bar */}
+      <div className="h-16 bg-gradient-to-r from-[#27272a] to-[#3f3f46] flex items-center justify-center px-6">
+        <div className="flex items-center gap-3">
           <Briefcase className="h-6 w-6 text-white" />
-          <span className="text-white font-semibold text-xl">Jobs</span>
+          <span className="text-white typ-h tracking-tight">Jobs</span>
         </div>
       </div>
-      <div className="px-6 py-6 space-y-5">
-        <p className="text-[#a1a1aa] text-base leading-relaxed">
+      {/* Content */}
+      <div className="px-7 py-7 space-y-6">
+  <p className="text-[#b3b3b7] typ-body">
           Discover career opportunities and connect with employers.
         </p>
-        
-        <div className="space-y-3">
-          <Link href="/jobs">
+        <div className="space-y-4">
+          <Link href="/jobs" className="block">
             <Button 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base py-3 h-12"
-              size="default"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium h-12 rounded-lg shadow-sm hover:shadow transition-shadow"
             >
-              <Briefcase className="h-5 w-5 mr-3" />
+              <Briefcase className="h-5 w-5 mr-2" />
               Browse Jobs
             </Button>
           </Link>
-          
-          <Link href="/jobs">
+          <Link href="/jobs" className="block">
             <Button 
               variant="outline" 
-              className="w-full text-base border-[#3f3f46] text-gray-300 hover:text-white hover:bg-[#3f3f46] py-3 h-12"
-              size="default"
+              className="w-full text-sm font-medium h-12 rounded-lg border-[#3f3f46] text-gray-300 hover:text-white hover:bg-[#2b2b31] shadow-sm hover:shadow transition-shadow"
             >
-              <ExternalLink className="h-5 w-5 mr-3" />
+              <ExternalLink className="h-5 w-5 mr-2" />
               Post a Job
             </Button>
           </Link>

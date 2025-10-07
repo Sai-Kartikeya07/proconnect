@@ -88,7 +88,7 @@ export default function EducationCard({
               )}
             </div>
             
-            <p className="text-blue-400 font-medium mb-1">
+            <p className="text-neutral-300 font-medium mb-1">
               {education.institution}
             </p>
             
@@ -106,7 +106,7 @@ export default function EducationCard({
               size="sm"
               variant="outline"
               onClick={() => onEdit(education)}
-              className="text-blue-400 hover:text-blue-300"
+              className="text-neutral-400 hover:text-purple-400"
             >
               <Edit className="h-4 w-4" />
             </Button>

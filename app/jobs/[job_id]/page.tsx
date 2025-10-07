@@ -5,9 +5,9 @@ import JobDetailsClient from "@/components/JobDetailsClient";
 
 interface JobPageParams { job_id: string }
 
-// Using a loose any on the boundary to avoid Next.js route type inference issues seen in build.
-async function AuthenticatedJobDetailsPage(props: any) {
-  const { job_id } = (props.params as JobPageParams);
+// Await params per Next.js 15 guidance.
+async function AuthenticatedJobDetailsPage(props: { params: Promise<JobPageParams> }) {
+  const { job_id } = await props.params;
 
   // Get job details with user information
   const jobResult = await sql`
@@ -33,11 +33,10 @@ async function AuthenticatedJobDetailsPage(props: any) {
   );
 }
 
-export default function JobDetailsPage(props: any) {
-  const { params } = props;
+export default function JobDetailsPage(props: { params: Promise<JobPageParams> }) {
   return (
     <AuthWrapper>
-      <AuthenticatedJobDetailsPage params={params} />
+      <AuthenticatedJobDetailsPage params={props.params} />
     </AuthWrapper>
   );
 }

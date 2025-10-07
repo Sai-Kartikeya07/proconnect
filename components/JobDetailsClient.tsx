@@ -86,21 +86,23 @@ export default function JobDetailsClient({ job }: JobDetailsClientProps) {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="text-gray-400 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Jobs
-        </Button>
-        
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Jobs
+          </Button>
+        </div>
         {isOwner && (
-          <div className="flex space-x-3">
+          <div className="flex items-center gap-3">
             <Button
-              onClick={handleEdit}
+              size="sm"
               variant="outline"
-              className="text-blue-400 hover:text-blue-300"
+              onClick={handleEdit}
+              className="text-neutral-400 hover:text-purple-400"
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit Job
@@ -119,12 +121,12 @@ export default function JobDetailsClient({ job }: JobDetailsClientProps) {
       </div>
 
       {/* Job Details Card */}
-      <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden">
+  <div className="surface-card glow overflow-hidden">
         {/* Header Section */}
         <div className="p-8 border-b border-[#3f3f46]">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-start space-x-4">
-              <div className="bg-blue-600 rounded-lg p-4">
+              <div className="bg-purple-600 rounded-lg p-4">
                 <Briefcase className="h-8 w-8 text-white" />
               </div>
               
@@ -136,7 +138,7 @@ export default function JobDetailsClient({ job }: JobDetailsClientProps) {
                   </Badge>
                 </div>
                 
-                <p className="text-xl text-blue-400 font-medium mb-3">{job.company}</p>
+                <p className="text-xl text-neutral-300 font-medium mb-3">{job.company}</p>
                 
                 <div className="flex items-center space-x-6 text-gray-400">
                   <div className="flex items-center space-x-2">
@@ -160,7 +162,7 @@ export default function JobDetailsClient({ job }: JobDetailsClientProps) {
             {!isOwner && (
               <Button
                 onClick={handleApply}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg"
                 size="lg"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />
@@ -288,7 +290,7 @@ export default function JobDetailsClient({ job }: JobDetailsClientProps) {
               </p>
               <Button
                 onClick={handleApply}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3"
                 size="lg"
               >
                 <CheckCircle className="h-5 w-5 mr-2" />

@@ -7,9 +7,10 @@ import { IEducation, IUserProfile } from "@/types/profile";
 
 interface ProfilePageParams { user_id: string }
 
-async function AuthenticatedUserProfilePage(props: any) {
+// Next.js 15+ provides params as an async value; await before usage.
+async function AuthenticatedUserProfilePage(props: { params: Promise<ProfilePageParams> }) {
   const { userId: currentUserId } = await auth();
-  const { user_id } = (props.params as ProfilePageParams);
+  const { user_id } = await props.params;
 
   const userResult = await sql`
     SELECT id, first_name, image_url, email, created_at
@@ -100,7 +101,7 @@ async function AuthenticatedUserProfilePage(props: any) {
   );
 }
 
-export default function UserProfilePage(props: any) {
+export default function UserProfilePage(props: { params: Promise<ProfilePageParams> }) {
   return (
     <AuthWrapper>
       <AuthenticatedUserProfilePage params={props.params} />

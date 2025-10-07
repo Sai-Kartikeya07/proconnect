@@ -71,7 +71,7 @@ export default function UserProfileClient({
   return (
     <div className="space-y-8">
       {/* Profile Header */}
-      <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] overflow-hidden">
+  <div className="surface-card glow overflow-hidden">
         {/* Cover/Header Section */}
         <div className="h-32 bg-gradient-to-r from-blue-600 to-purple-600"></div>
         
@@ -173,7 +173,7 @@ export default function UserProfileClient({
       </div>
 
       {/* Education Section */}
-      <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] p-8">
+  <div className="surface-card glow p-8">
         <EducationSection 
           education={profile.education}
           isOwnProfile={isOwnProfile}
@@ -182,7 +182,7 @@ export default function UserProfileClient({
       </div>
 
       {/* Recent Activity Placeholder */}
-      <div className="bg-[#18181b] rounded-xl border border-[#3f3f46] p-8">
+  <div className="surface-card glow p-8">
         <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
           <FileText className="h-5 w-5 mr-2" />
           Recent Activity

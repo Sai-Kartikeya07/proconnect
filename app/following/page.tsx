@@ -53,70 +53,91 @@ function FollowingPage() {
   const notFollowingUsers = users.filter(u => !following.includes(u.id) && u.id !== user?.id);
 
   return (
-    <div className="max-w-3xl mx-auto mt-8 p-4 bg-[#18181b] rounded-xl border border-[#3f3f46] shadow-md">
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold text-white">Following</h2>
-          <Image src="/globe.svg" alt="Following" width={28} height={28} className="ml-1" />
+    <div className="max-w-5xl mx-auto px-6 md:px-8">
+      <div className="min-h-[calc(100vh-140px)] flex flex-col justify-center py-10">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10 will-animate fade-up" style={{animationDelay:'0ms'}}>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-white tracking-tight">Following</h2>
+            <Image src="/globe.svg" alt="Following" width={32} height={32} />
+          </div>
+          <Button
+            onClick={() => router.back()}
+            className="pill pill-go-back pressable px-4 py-2 text-sm font-medium"
+            variant="ghost"
+          >
+            <span>Go Back</span>
+          </Button>
         </div>
-        <Button variant="outline" onClick={() => router.back()}>
-          Go Back
-        </Button>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Box: Who you are following */}
-        <div className="bg-[#23232a] rounded-xl p-6 border border-[#3f3f46] shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Image src="/window.svg" alt="Following" width={22} height={22} />
-            You are following
-          </h3>
-          {followingUsers.length === 0 ? (
-            <div className="text-gray-400">You are not following anyone yet.</div>
-          ) : (
-            <div className="space-y-4">
-              {followingUsers.map(u => (
-                <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-[#23232a] hover:bg-[#2a2a33] transition">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={u.image_url} />
-                      <AvatarFallback>{u.first_name?.charAt(0)}{u.last_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-white font-medium text-base">{u.first_name} {u.last_name}</span>
+        {/* Dual Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
+          {/* You are following */}
+          <div className="surface-card glow p-6 rounded-xl will-animate fade-up" style={{animationDelay:'80ms'}}>
+            <h3 className="typ-sub text-white font-semibold mb-5 flex items-center gap-2">
+              <Image src="/window.svg" alt="Following" width={22} height={22} />
+              You are following
+            </h3>
+            {followingUsers.length === 0 ? (
+              <div className="text-gray-400 text-sm">You are not following anyone yet.</div>
+            ) : (
+              <div className="space-y-3">
+                {followingUsers.map((u, idx) => (
+                  <div
+                    key={u.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#23232a] hover:bg-[#2a2a33] transition will-animate fade-up"
+                    style={{animationDelay: `${Math.min(120 + idx*50, 460)}ms`}}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={u.image_url} />
+                        <AvatarFallback>{u.first_name?.charAt(0)}{u.last_name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-white font-medium text-sm md:text-base">{u.first_name} {u.last_name}</span>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => handleUnfollow(u.id)}>
+                      Unfollow
+                    </Button>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => handleUnfollow(u.id)}>
-                    Unfollow
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {/* Box: Who you can follow */}
-        <div className="bg-[#23232a] rounded-xl p-6 border border-[#3f3f46] shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Image src="/globe.svg" alt="Accounts" width={22} height={22} />
-            Accounts you can follow
-          </h3>
-          {notFollowingUsers.length === 0 ? (
-            <div className="text-gray-400">No more accounts to follow.</div>
-          ) : (
-            <div className="space-y-4">
-              {notFollowingUsers.map(u => (
-                <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-[#23232a] hover:bg-[#2a2a33] transition">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={u.image_url} />
-                      <AvatarFallback>{u.first_name?.charAt(0)}{u.last_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-white font-medium text-base">{u.first_name} {u.last_name}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Accounts you can follow */}
+          <div className="surface-card glow p-6 rounded-xl will-animate fade-up" style={{animationDelay:'120ms'}}>
+            <h3 className="typ-sub text-white font-semibold mb-5 flex items-center gap-2">
+              <Image src="/globe.svg" alt="Accounts" width={22} height={22} />
+              Accounts you can follow
+            </h3>
+            {notFollowingUsers.length === 0 ? (
+              <div className="text-gray-400 text-sm">No more accounts to follow.</div>
+            ) : (
+              <div className="space-y-3">
+                {notFollowingUsers.map((u, idx) => (
+                  <div
+                    key={u.id}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#23232a] hover:bg-[#2a2a33] transition will-animate fade-up"
+                    style={{animationDelay: `${Math.min(160 + idx*50, 500)}ms`}}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={u.image_url} />
+                        <AvatarFallback>{u.first_name?.charAt(0)}{u.last_name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-white font-medium text-sm md:text-base">{u.first_name} {u.last_name}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleFollow(u.id)}
+                      className="btn-accent-follow pressable"
+                      data-accent="true"
+                    >
+                      Follow
+                    </Button>
                   </div>
-                  <Button size="sm" onClick={() => handleFollow(u.id)}>
-                    Follow
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
