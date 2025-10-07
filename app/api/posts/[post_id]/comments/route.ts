@@ -1,6 +1,7 @@
 import sql from "@/lib/neon";
 import { IUser } from "@/types/user";
 import { NextResponse } from "next/server";
+import { sendEmailNotification, renderPostCommentedEmail } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -36,6 +37,22 @@ export async function POST(
       INSERT INTO comments (post_id, user_id, user_image, first_name, last_name, text)
       VALUES (${post_id}, ${user.userId}, ${user.userImage}, ${user.firstName}, ${user.lastName}, ${text});
     `;
+    // Fetch post & owner info to send notification
+    const postRows = await sql`SELECT id, user_id, first_name, last_name, text FROM posts WHERE id = ${post_id} LIMIT 1;`;
+    const post = postRows[0];
+    if (post && post.user_id !== user.userId) {
+  const owner = await sql`SELECT email FROM users WHERE id = ${post.user_id} LIMIT 1;`.catch(() => [] as any);
+      const ownerEmail = owner[0]?.email;
+      if (ownerEmail) {
+        const commenterName = `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`;
+        const html = renderPostCommentedEmail(post.first_name, commenterName, text.slice(0, 300), (post.text || '').slice(0, 160));
+        sendEmailNotification({
+          to: ownerEmail,
+          subject: "New comment on your post",
+          html,
+        }).catch(err => console.warn('Failed to send comment notification email', err));
+      }
+    }
     return NextResponse.json({ message: "Comment added successfully" });
   } catch {
     return NextResponse.json(

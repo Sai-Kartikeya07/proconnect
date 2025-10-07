@@ -11,15 +11,32 @@ export async function POST(request: Request) {
   if (!followingId) {
     return NextResponse.json({ error: "Missing followingId" }, { status: 400 });
   }
+  
   try {
-    await sql`
-      INSERT INTO follows (follower_id, following_id)
-      VALUES (${user.id}, ${followingId})
-      ON CONFLICT (follower_id, following_id) DO NOTHING;
+    // Check if already following
+    const existingFollow = await sql`
+      SELECT * FROM follows 
+      WHERE follower_id = ${user.id} AND following_id = ${followingId};
     `;
-    return NextResponse.json({ message: "Followed successfully" });
-  } catch {
-    return NextResponse.json({ error: "Failed to follow user" }, { status: 500 });
+
+    if (existingFollow.length > 0) {
+      // Unfollow
+      await sql`
+        DELETE FROM follows 
+        WHERE follower_id = ${user.id} AND following_id = ${followingId};
+      `;
+      return NextResponse.json({ message: "Unfollowed successfully", isFollowing: false });
+    } else {
+      // Follow
+      await sql`
+        INSERT INTO follows (follower_id, following_id) 
+        VALUES (${user.id}, ${followingId});
+      `;
+      return NextResponse.json({ message: "Followed successfully", isFollowing: true });
+    }
+  } catch (error) {
+    console.error("Follow toggle error:", error);
+    return NextResponse.json({ error: "Failed to toggle follow" }, { status: 500 });
   }
 }
 

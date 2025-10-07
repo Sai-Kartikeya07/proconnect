@@ -2,6 +2,7 @@
 import sql from "@/lib/neon";
 import { IUser } from "@/types/user";
 import { NextResponse } from "next/server";
+import { sendEmailNotification, renderPostCreatedEmail } from "@/lib/email";
 
 export interface AddPostRequestBody {
   user: IUser;
@@ -21,6 +22,28 @@ export async function POST(request: Request) {
       RETURNING *;
     `;
     const post = result[0];
+
+    // Attempt to send email notification (best-effort, non-blocking failure)
+    if ((user as any).email) {
+      const html = renderPostCreatedEmail(user.firstName, text.slice(0, 280));
+      sendEmailNotification({
+        to: (user as any).email,
+        subject: "Your post is live",
+        html,
+      }).catch(err => console.warn('Failed to queue post created email', err));
+    } else {
+      // Fallback: look up in users table (PK = id)
+      const rows = await sql`SELECT email, first_name FROM users WHERE id = ${user.userId} LIMIT 1;`.catch(() => [] as any);
+      const email = rows[0]?.email;
+      if (email) {
+        const html = renderPostCreatedEmail(rows[0].first_name || user.firstName, text.slice(0, 280));
+        sendEmailNotification({
+          to: email,
+          subject: "Your post is live",
+          html,
+        }).catch(err => console.warn('Failed to queue post created email (fallback)', err));
+      }
+    }
     return NextResponse.json({ message: "Post created successfully", post });
   } catch (error) {
     return NextResponse.json(

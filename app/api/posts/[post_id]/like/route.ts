@@ -1,5 +1,6 @@
 import sql from "@/lib/neon";
 import { NextResponse } from "next/server";
+import { sendEmailNotification, renderPostLikedEmail } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -40,6 +41,24 @@ export async function POST(
     } else {
       await sql`INSERT INTO likes (post_id, user_id) VALUES (${post_id}, ${userId});`;
       console.log('Inserted like');
+      // Fetch post & owner info
+      const postRows = await sql`SELECT id, user_id, first_name, last_name, text FROM posts WHERE id = ${post_id} LIMIT 1;`;
+      const post = postRows[0];
+      // Fetch liker user name (if stored anywhere)
+  // Users table uses 'id' as PK (not user_id)
+  const liker = await sql`SELECT first_name, last_name, email FROM users WHERE id = ${userId} LIMIT 1;`.catch(() => [] as any);
+      const likerName = liker[0] ? `${liker[0].first_name}${liker[0].last_name ? ' ' + liker[0].last_name : ''}` : 'Someone';
+      // Owner email
+  const owner = await sql`SELECT email FROM users WHERE id = ${post.user_id} LIMIT 1;`.catch(() => [] as any);
+      const ownerEmail = owner[0]?.email;
+      if (ownerEmail && post.user_id !== userId) {
+        const html = renderPostLikedEmail(post.first_name, likerName, (post.text || '').slice(0, 180));
+        sendEmailNotification({
+          to: ownerEmail,
+          subject: "Your post got a like",
+          html,
+        }).catch(err => console.warn('Failed to send like notification email', err));
+      }
       return NextResponse.json({ message: "Post liked successfully" });
     }
   } catch (error) {

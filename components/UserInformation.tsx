@@ -3,7 +3,9 @@ import { useUser } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 import { Button } from './ui/button'
+import Link from 'next/link'
 import React, { useEffect, useState } from "react";
+import { User } from "lucide-react";
 
 function UserInformation() {
   const { user } = useUser();
@@ -71,6 +73,20 @@ function UserInformation() {
         </SignedOut>
         {/* Divider */}
         <hr className="w-full border-[#3f3f46] my-4" />
+        
+        {/* Profile Button */}
+        <SignedIn>
+          <Link href={`/profile/${user?.id}`} className="w-full">
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-4"
+              size="sm"
+            >
+              <User className="h-4 w-4 mr-2" />
+              View Profile
+            </Button>
+          </Link>
+        </SignedIn>
+        
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 text-center w-full">
           <div>

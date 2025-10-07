@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image';
-import { HomeIcon, MessagesSquare, SearchIcon } from 'lucide-react'
+import { HomeIcon, MessagesSquare, SearchIcon, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
 import { Button } from './ui/button'
@@ -43,9 +43,14 @@ function Header() {
           <span>Home</span>
         </Link>
 
-        <Link href="/" className="pill">
+        <Link href="/jobs" className="pill">
+          <Briefcase className="h-5" />
+          <span>Jobs</span>
+        </Link>
+
+        <Link href="/messages" className="pill">
           <MessagesSquare className="h-5" />
-          <span>Messaging</span>
+          <span>Messages</span>
         </Link>
 
         <Link href="/following" className="pill flex items-center gap-1">

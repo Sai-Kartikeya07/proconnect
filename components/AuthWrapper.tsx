@@ -32,7 +32,7 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
           <header className="sticky top-0 z-50 shadow-lg border-b border-[#27272a] bg-gradient-to-r from-[#18181b] to-[#0d0d0f] backdrop-blur">
             <Header />
           </header>
-          <main className="flex-1 w-full max-w-6xl mx-auto p-6">
+          <main className="flex-1 w-full">
             {children}
           </main>
         </div>
