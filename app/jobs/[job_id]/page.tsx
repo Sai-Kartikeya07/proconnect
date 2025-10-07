@@ -3,8 +3,11 @@ import sql from "@/lib/neon";
 import AuthWrapper from "@/components/AuthWrapper";
 import JobDetailsClient from "@/components/JobDetailsClient";
 
-async function AuthenticatedJobDetailsPage({ params }: { params: { job_id: string } }) {
-  const { job_id } = params;
+interface JobPageParams { job_id: string }
+
+// Using a loose any on the boundary to avoid Next.js route type inference issues seen in build.
+async function AuthenticatedJobDetailsPage(props: any) {
+  const { job_id } = (props.params as JobPageParams);
 
   // Get job details with user information
   const jobResult = await sql`
@@ -30,7 +33,8 @@ async function AuthenticatedJobDetailsPage({ params }: { params: { job_id: strin
   );
 }
 
-export default function JobDetailsPage({ params }: { params: { job_id: string } }) {
+export default function JobDetailsPage(props: any) {
+  const { params } = props;
   return (
     <AuthWrapper>
       <AuthenticatedJobDetailsPage params={params} />
