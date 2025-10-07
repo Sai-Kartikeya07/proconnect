@@ -8,7 +8,7 @@ import sql from "@/lib/neon";
 // We keep it simple and allow any object shape while extracting 'id'.
 export async function GET(
   _request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
     const { userId } = await auth();
@@ -41,7 +41,7 @@ export async function GET(
 // PUT /api/education/[id] - Update education record
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
     const { userId } = await auth();
@@ -109,7 +109,7 @@ export async function PUT(
 // DELETE /api/education/[id] - Delete education record
 export async function DELETE(
   _request: NextRequest,
-  context: { params: { id: string } }
+  context: any
 ) {
   try {
     const { userId } = await auth();
