@@ -5,11 +5,11 @@ import sql from "@/lib/neon";
 // GET /api/profile/[user_id] - Get user profile with education
 export async function GET(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  context: any
 ) {
   try {
     const { userId: currentUserId } = await auth();
-    const { user_id } = params;
+    const { user_id } = context.params;
 
     // Get user basic information
     const userResult = await sql`
