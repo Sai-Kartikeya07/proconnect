@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { IUserProfile } from "@/types/profile";
 import EducationSection from "./EducationSection";
 import { 
@@ -32,7 +31,7 @@ export default function UserProfileClient({
   isOwnProfile, 
   currentUserId 
 }: UserProfileClientProps) {
-  const { user } = useUser();
+  const { user: _user } = useUser();
   const [isFollowing, setIsFollowing] = useState(profile.is_following);
   const [followersCount, setFollowersCount] = useState(profile.followers_count || 0);
   const [loading, setLoading] = useState(false);

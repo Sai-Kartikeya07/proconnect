@@ -1,7 +1,7 @@
 import sql from "@/lib/neon";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const posts = await sql`SELECT id, user_id FROM posts;`;
     const comments = await sql`SELECT id, user_id FROM comments;`;

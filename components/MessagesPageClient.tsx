@@ -13,7 +13,7 @@ interface MessagesPageClientProps {
 }
 
 export default function MessagesPageClient({ initialConversations }: MessagesPageClientProps) {
-  const { user } = useUser();
+  const { user: _user } = useUser();
   const [conversations, setConversations] = useState<IConversation[]>(initialConversations);
   const [selectedConversation, setSelectedConversation] = useState<IConversation | null>(null);
 

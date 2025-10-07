@@ -22,7 +22,7 @@ export async function GET(
       dislikes: dislikes.map((d: any) => d.user_id),
       comments,
     });
-  } catch (e) {
+  } catch (_e) {
     return NextResponse.json(
       { error: "An error occurred while fetching the post" },
       { status: 500 }
@@ -54,7 +54,7 @@ export async function DELETE(
     await sql`DELETE FROM dislikes WHERE post_id = ${post_id};`;
     await sql`DELETE FROM comments WHERE post_id = ${post_id};`;
     return NextResponse.json({ message: "Post deleted successfully" });
-  } catch (e) {
+  } catch (_e) {
     return NextResponse.json(
       { error: "An error occurred while deleting the post" },
       { status: 500 }

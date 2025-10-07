@@ -59,7 +59,7 @@ export async function DELETE(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const user = await currentUser();
   if (!user?.id) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

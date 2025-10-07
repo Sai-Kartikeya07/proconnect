@@ -19,7 +19,7 @@ export async function POST(
     // Remove like if exists
     await sql`DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${userId};`;
     return NextResponse.json({ message: "Post unliked successfully" });
-  } catch (e) {
+  } catch (_e) {
     return NextResponse.json(
       { error: "An error occurred while unliking the post" },
       { status: 500 }

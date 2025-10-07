@@ -27,8 +27,8 @@ export default function OnboardingNameModal({ onComplete }: OnboardingNameModalP
     return () => { active = false; };
   }, []);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(_e: React.FormEvent) {
+    _e.preventDefault();
     setError(null);
     if (!firstName.trim()) {
       setError('First name is required');

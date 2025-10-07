@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { IEducation } from "@/types/profile";
 import EducationForm from "./EducationForm";
 import EducationCard from "./EducationCard";

@@ -1,6 +1,6 @@
 import sql from '@/lib/neon';
 
-let cached: { checked: boolean; hasPostNameCols: boolean; hasCommentNameCols: boolean } = {
+const cached: { checked: boolean; hasPostNameCols: boolean; hasCommentNameCols: boolean } = {
   checked: false,
   hasPostNameCols: true,
   hasCommentNameCols: true,
@@ -15,7 +15,7 @@ export async function loadSchemaFlags() {
     const commentNames = commentCols.map((r: any) => r.column_name);
     cached.hasPostNameCols = postNames.includes('first_name') && postNames.includes('last_name');
     cached.hasCommentNameCols = commentNames.includes('first_name') && commentNames.includes('last_name');
-  } catch (e) {
+  } catch (_e) {
     // If introspection fails, assume legacy to avoid breaking writes.
     cached.hasPostNameCols = true;
     cached.hasCommentNameCols = true;

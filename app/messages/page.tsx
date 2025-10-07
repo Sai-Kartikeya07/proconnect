@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import sql from "@/lib/neon";
 import AuthWrapper from "@/components/AuthWrapper";
 import MessagesPageClient from "@/components/MessagesPageClient";

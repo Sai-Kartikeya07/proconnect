@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import sql from "@/lib/neon";
 
 // GET /api/messages - Get all conversations for the current user
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {

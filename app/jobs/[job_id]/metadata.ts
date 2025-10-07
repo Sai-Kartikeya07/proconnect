@@ -3,7 +3,7 @@ import { Metadata } from "next";
 export async function generateMetadata(
   { params }: { params: { job_id: string } }
 ): Promise<Metadata> {
-  const { job_id } = params;
+  const { job_id: _job_id } = params;
   
   try {
     // This would typically fetch the job data for SEO metadata
