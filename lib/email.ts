@@ -64,6 +64,31 @@ export function renderPostCommentedEmail(ownerName: string, commenterName: strin
   </div>`;
 }
 
+export function renderWelcomeEmail(firstName: string) {
+  return `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.5;background:#0f1115;padding:24px;color:#e5e7eb;">
+  <div style="max-width:640px;margin:0 auto;background:#1c1f24;border:1px solid #2a2f36;border-radius:12px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#3b82f6,#6366f1);padding:28px 32px;">
+      <h1 style="margin:0;font-size:24px;font-weight:600;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">Welcome to ProConnect</h1>
+    </div>
+    <div style="padding:32px;">
+      <p style="margin:0 0 16px;font-size:15px;">Hi ${escapeHtml(firstName || 'there')},</p>
+      <p style="margin:0 0 16px;font-size:15px;">We're excited to have you join a community built for sharing posts, discovering opportunities, and building professional connections.</p>
+      <div style="margin:24px 0;padding:16px 20px;border:1px solid #334155;border-radius:10px;background:#111418;">
+        <h2 style="margin:0 0 12px;font-size:16px;color:#93c5fd;font-weight:600;">Here’s what you can do next:</h2>
+        <ul style="padding-left:20px;margin:0;color:#cbd5e1;font-size:14px;">
+          <li style="margin-bottom:6px;">Create your first post to introduce yourself</li>
+          <li style="margin-bottom:6px;">Add your education details to enhance your profile</li>
+          <li style="margin-bottom:6px;">Follow people you find interesting</li>
+          <li style="margin-bottom:6px;">Explore jobs posted by the community</li>
+        </ul>
+      </div>
+      <p style="margin:0 0 16px;font-size:15px;">Need help? Just reply to this email (if monitored) or visit your profile to adjust settings.</p>
+      <p style="margin:24px 0 0;font-size:12px;color:#64748b;">You’re receiving this because you created a ProConnect account. If this wasn’t you, you can ignore this email.</p>
+    </div>
+  </div>
+</div>`;
+}
+
 function escapeHtml(str: string) {
   return str.replace(/[&<>'"]/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
