@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import sql from "@/lib/neon";
 import AuthWrapper from "@/components/AuthWrapper";
 import UserProfileClient from "@/components/UserProfileClient";
+import { IEducation, IUserProfile } from "@/types/profile";
 
 async function AuthenticatedUserProfilePage({ params }: { params: { user_id: string } }) {
   const { userId: currentUserId } = await auth();
   const { user_id } = params;
 
-  // Get user basic information
   const userResult = await sql`
     SELECT id, first_name, image_url, email, created_at
     FROM users 
@@ -22,7 +22,7 @@ async function AuthenticatedUserProfilePage({ params }: { params: { user_id: str
   const user = userResult[0];
 
   // Get user's education
-  const education = await sql`
+  const educationRaw = await sql`
     SELECT * FROM education 
     WHERE user_id = ${user_id}
     ORDER BY is_current DESC, start_date DESC;
@@ -58,14 +58,33 @@ async function AuthenticatedUserProfilePage({ params }: { params: { user_id: str
     }
   }
 
-  const profile = {
-    ...user,
-    education: education as any,
-    posts_count: parseInt(stats.posts_count),
-    followers_count: parseInt(stats.followers_count),
-    following_count: parseInt(stats.following_count),
+  const education: IEducation[] = educationRaw.map((row: any) => ({
+    id: row.id,
+    user_id: row.user_id,
+    institution: row.institution,
+    degree: row.degree,
+    field_of_study: row.field_of_study ?? undefined,
+    start_date: row.start_date ?? undefined,
+    end_date: row.end_date ?? undefined,
+    is_current: row.is_current,
+    grade: row.grade ?? undefined,
+    description: row.description ?? undefined,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }));
+
+  const profile: IUserProfile = {
+    id: user.id,
+    first_name: user.first_name,
+    image_url: user.image_url || undefined,
+    email: user.email || undefined,
+    created_at: user.created_at,
+    education,
+    posts_count: Number(stats.posts_count) || 0,
+    followers_count: Number(stats.followers_count) || 0,
+    following_count: Number(stats.following_count) || 0,
     is_following: isFollowing,
-    can_message: canMessage
+    can_message: canMessage,
   };
 
   return (
@@ -73,7 +92,7 @@ async function AuthenticatedUserProfilePage({ params }: { params: { user_id: str
       <UserProfileClient 
         profile={profile} 
         isOwnProfile={currentUserId === user_id}
-        currentUserId={currentUserId}
+        currentUserId={currentUserId || undefined}
       />
     </div>
   );
