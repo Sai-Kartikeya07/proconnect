@@ -5,7 +5,7 @@ import sql from "@/lib/neon";
 // GET /api/messages/[user_id] - Get conversation with a specific user
 export async function GET(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  context: any
 ) {
   try {
     const { userId } = await auth();
@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user_id } = params;
+  const { user_id } = context.params;
 
     // Check if users can message each other
     const canMessage = await sql`
@@ -73,7 +73,7 @@ export async function GET(
 // POST /api/messages/[user_id] - Send message to specific user
 export async function POST(
   request: NextRequest,
-  { params }: { params: { user_id: string } }
+  context: any
 ) {
   try {
     const { userId } = await auth();
@@ -81,7 +81,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { user_id } = params;
+  const { user_id } = context.params;
     const { content, message_type = 'text' } = await request.json();
 
     if (!content) {
