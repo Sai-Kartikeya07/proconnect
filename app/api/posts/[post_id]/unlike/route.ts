@@ -1,5 +1,4 @@
-import connectDB from "@/mongodb/db";
-import { Post } from "@/mongodb/models/post";
+import sql from "@/lib/neon";
 import { NextResponse } from "next/server";
 
 export interface UnlikePostRequestBody {
@@ -10,20 +9,17 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ post_id: string }> }
 ) {
-  await connectDB();
-
   const { userId }: UnlikePostRequestBody = await request.json();
   try {
     const { post_id } = await params;
-    const post = await Post.findById(post_id);
-
-    if (!post) {
+    const rows = await sql`SELECT id, user_id FROM posts WHERE id = ${post_id} LIMIT 1;`;
+    if (rows.length === 0) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-
-    await post.unlikePost(userId);
+    // Remove like if exists
+    await sql`DELETE FROM likes WHERE post_id = ${post_id} AND user_id = ${userId};`;
     return NextResponse.json({ message: "Post unliked successfully" });
-  } catch {
+  } catch (e) {
     return NextResponse.json(
       { error: "An error occurred while unliking the post" },
       { status: 500 }
