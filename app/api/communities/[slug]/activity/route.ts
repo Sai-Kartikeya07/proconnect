@@ -4,14 +4,12 @@ import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 
 // POST create a new activity entry for a community.
-export async function POST(
-  req: Request,
-  { params }: { params: { slug: string } }
-) {
+export async function POST(req: Request, context: any) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const slug = params.slug;
+  const slug = context?.params?.slug as string;
+  if (!slug) return NextResponse.json({ error: 'Missing slug' }, { status: 400 });
   // verify community exists
   const communityRows = await sql`SELECT id FROM communities WHERE slug = ${slug};`;
   if (!communityRows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -31,11 +29,9 @@ export async function POST(
 }
 
 // GET list activities (optional usage if needed by client fetch)
-export async function GET(
-  _req: Request,
-  { params }: { params: { slug: string } }
-) {
-  const slug = params.slug;
+export async function GET(_req: Request, context: any) {
+  const slug = context?.params?.slug as string;
+  if (!slug) return NextResponse.json({ activities: [], error: 'Missing slug' });
   const rows = await sql`
     SELECT a.id, a.content, a.created_at, u.first_name, u.image_url
     FROM community_activity a
