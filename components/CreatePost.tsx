@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { Image as ImageIcon, Link as LinkIcon, Tag as TagIcon } from 'lucide-react';
+import { Image as ImageIcon } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import createPostAction from '@/actions/createPostAction';
 
@@ -123,22 +123,6 @@ export default function CreatePost() {
             className="flex items-center gap-2 text-neutral-400 hover:text-purple-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 rounded-md"
           >
             <ImageIcon size={16} /> <span className="hidden sm:inline">Add image</span>
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 text-neutral-400 hover:text-purple-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 rounded-md"
-            disabled
-            title="Link attachment coming soon"
-          >
-            <LinkIcon size={16} /> <span className="hidden sm:inline">Add link</span>
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-2 text-neutral-400 hover:text-purple-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 rounded-md"
-            disabled
-            title="Topics coming soon"
-          >
-            <TagIcon size={16} /> <span className="hidden sm:inline">Add topic</span>
           </button>
         </div>
         <div className="flex items-center gap-2">

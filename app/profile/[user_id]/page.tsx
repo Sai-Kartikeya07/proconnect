@@ -84,6 +84,22 @@ async function AuthenticatedUserProfilePage(props: { params: Promise<ProfilePage
     updated_at: row.updated_at,
   }));
 
+  // Fetch saved posts for own profile view
+  let savedPosts: any[] = [];
+  if (currentUserId === user_id) {
+    savedPosts = await sql`
+      SELECT p.*,
+             u.first_name as fresh_first_name,
+             u.last_name as fresh_last_name,
+             u.image_url as fresh_user_image
+      FROM saved_posts sp
+      JOIN posts p ON sp.post_id = p.id
+      LEFT JOIN users u ON p.user_id = u.id
+      WHERE sp.user_id = ${user_id}
+      ORDER BY sp.created_at DESC;
+    `;
+  }
+
   const profile: IUserProfile = {
     id: user.id,
     first_name: user.first_name,
@@ -104,6 +120,7 @@ async function AuthenticatedUserProfilePage(props: { params: Promise<ProfilePage
         profile={profile} 
         isOwnProfile={currentUserId === user_id}
         currentUserId={currentUserId || undefined}
+        savedPosts={savedPosts}
       />
     </div>
   );

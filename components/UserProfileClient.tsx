@@ -24,12 +24,14 @@ interface UserProfileClientProps {
   profile: IUserProfile;
   isOwnProfile: boolean;
   currentUserId?: string;
+  savedPosts?: any[];
 }
 
 export default function UserProfileClient({ 
   profile, 
   isOwnProfile, 
-  currentUserId 
+  currentUserId,
+  savedPosts = []
 }: UserProfileClientProps) {
   const { user: _user } = useUser();
   const [isFollowing, setIsFollowing] = useState(profile.is_following);
@@ -191,6 +193,34 @@ export default function UserProfileClient({
           <p className="text-gray-400">Recent posts and activity will appear here</p>
         </div>
       </div>
+
+      {isOwnProfile && (
+        <div className="surface-card glow p-8">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            Saved Posts
+          </h2>
+          {savedPosts.length === 0 && (
+            <p className="text-gray-400 text-sm">You haven't saved any posts yet.</p>
+          )}
+          <div className="space-y-6">
+            {savedPosts.map((p: any) => (
+              <div key={p.id} className="border border-[#2d2d31] rounded-lg p-4 bg-[#1f1f23]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white">
+                    {(p.fresh_first_name || p.first_name) ?? 'User'} {(p.fresh_last_name || p.last_name) ?? ''}
+                  </span>
+                  <span className="text-xs text-gray-500">{new Date(p.created_at).toLocaleDateString()}</span>
+                </div>
+                <p className="text-sm text-gray-300 mb-2 whitespace-pre-line">{p.text}</p>
+                {p.image_url && (
+                  <img src={p.image_url} alt="saved" className="rounded-md border border-[#2d2d31] max-h-72 object-cover" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

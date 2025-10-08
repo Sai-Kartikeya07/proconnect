@@ -6,7 +6,7 @@ import { Badge } from "./ui/badge";
 import ReactTimeago from "react-timeago";
 import { Button } from "./ui/button";
 import deletePostAction from "@/actions/deletePostAction";
-import { Trash2, Heart, MessageCircle, ThumbsDown } from "lucide-react";
+import { Trash2, Heart, MessageCircle, ThumbsDown, Bookmark } from "lucide-react";
 import Image from "next/image";
 import { useState, useCallback } from "react";
 import React from "react";
@@ -20,6 +20,19 @@ function Post({ post }: { post: any }) {
   const [isLiked, setIsLiked] = useState(likes.includes(user?.id || ""));
   const [isDisliked, setIsDisliked] = useState(dislikes.includes(user?.id || ""));
   const [showComments, setShowComments] = useState(false);
+  const [saved, setSaved] = useState<boolean>(!!post.saved);
+  const handleSaveToggle = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`/api/posts/${post.id}/save`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setSaved(data.saved);
+      }
+    } catch (e) {
+      console.error('Error toggling save', e);
+    }
+  };
 
   const handleLike = async () => {
     if (!user?.id) return;
@@ -189,6 +202,15 @@ function Post({ post }: { post: any }) {
             >
               <MessageCircle size={18} />
               <span>Comment</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSaveToggle}
+              className={`flex items-center space-x-2 ${saved ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}
+            >
+              <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} />
+              <span>{saved ? 'Saved' : 'Save'}</span>
             </Button>
           </div>
         </div>

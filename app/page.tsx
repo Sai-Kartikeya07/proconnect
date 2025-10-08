@@ -5,6 +5,7 @@ import JobsSection from "@/components/JobsSection";
 import sql from "@/lib/neon";
 import { loadSchemaFlags } from "@/lib/schemaIntrospection";
 import AuthWrapper from "@/components/AuthWrapper";
+import CommunitiesCard from "@/components/CommunitiesCard";
 
 export const revalidate = 0;
 
@@ -18,6 +19,13 @@ export default async function Home() {
 
 async function AuthenticatedHome() {
   const { hasCommentNameCols } = await loadSchemaFlags();
+  // Attempt to get current user (not fatal if unauthenticated)
+  let currentUserId: string | null = null;
+  try {
+    const { auth } = await import('@clerk/nextjs/server');
+    const a = await auth();
+    currentUserId = a.userId || null;
+  } catch {}
   const posts = await sql`
     SELECT p.*, u.first_name as fresh_first_name, u.last_name as fresh_last_name, u.image_url as fresh_user_image
     FROM posts p
@@ -28,6 +36,11 @@ async function AuthenticatedHome() {
     const likes = await sql`SELECT user_id FROM likes WHERE post_id = ${post.id};`;
     const dislikes = await sql`SELECT user_id FROM dislikes WHERE post_id = ${post.id};`;
     const rawComments = await sql`SELECT * FROM comments WHERE post_id = ${post.id} ORDER BY created_at ASC;`;
+    let saved = false;
+    if (currentUserId) {
+      const savedRows = await sql`SELECT 1 FROM saved_posts WHERE user_id = ${currentUserId} AND post_id = ${post.id} LIMIT 1;`;
+      saved = savedRows.length > 0;
+    }
     let comments = rawComments;
     if (!hasCommentNameCols && rawComments.length > 0) {
       const userIds = Array.from(new Set(rawComments.map((c: any) => c.user_id)));
@@ -48,29 +61,35 @@ async function AuthenticatedHome() {
       likes: likes.map((l: any) => l.user_id),
       dislikes: dislikes.map((d: any) => d.user_id),
       comments,
+      saved,
     };
   }));
 
     return (
-      <div className="main-layout">
-        {/* Feed */}
-        <section className="main-content space-y-6">
+      <div className="balanced-grid max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Left Sidebar Communities */}
+        <div className="left-col flex flex-col">
+          <CommunitiesCard variant="sidebar" className="h-full flex flex-col" />
+        </div>
+
+        {/* Center Feed */}
+        <div className="center-col flex flex-col space-y-6 min-h-full">
           <div className="will-animate fade-up" style={{animationDelay:'0ms'}}>
             <CreatePost />
           </div>
-          <PostFeed posts={postsWithExtras}/>
-        </section>
+          <CommunitiesCard variant="inline" />
+          <PostFeed posts={postsWithExtras} />
+        </div>
 
-        {/* Right Sidebar */}
-        <aside className="sidebar sidebar-content">
+        {/* Right Sidebar (Profile + Jobs) */}
+        <div className="right-col flex flex-col justify-start space-y-6">
           <div className="will-animate fade-up" style={{animationDelay:'50ms'}}>
             <UserInformation />
           </div>
           <div className="will-animate fade-up" style={{animationDelay:'150ms'}}>
             <JobsSection />
           </div>
-          {/* Add trending topics, community list, ads, etc. */}
-        </aside>
+        </div>
       </div>
     );
 }
