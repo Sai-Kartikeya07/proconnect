@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import AuthWrapper from '@/components/AuthWrapper';
 import Link from 'next/link';
 import React from 'react';
+import { isCommunityAdmin, isSuperCommunityAdmin, SUPER_COMMUNITY_ADMIN_ID } from '@/lib/communityAdmin';
+import Script from 'next/script';
 
 interface Params { slug: string }
 
@@ -14,9 +16,13 @@ async function CommunityInner(props: { params: Promise<Params> }) {
   if (!rows.length) notFound();
   const c = rows[0];
   let isMember = false;
+  let isAdmin = false;
+  let isSuper = false;
   if (userId) {
     const m = await sql`SELECT 1 FROM community_members WHERE community_id = ${c.id} AND user_id = ${userId};`;
     isMember = m.length > 0;
+    isAdmin = await isCommunityAdmin(c.id, userId);
+    isSuper = await isSuperCommunityAdmin(userId);
   }
   // Stats & related data
   const [countsRow] = await sql`
@@ -103,6 +109,15 @@ async function CommunityInner(props: { params: Promise<Params> }) {
 
   const recentActivities = activities.slice(0, 5);
 
+  // Current admins list
+  const admins = await sql`
+    SELECT ca.user_id, u.first_name, u.image_url, ca.created_at
+    FROM community_admins ca
+    LEFT JOIN users u ON u.id = ca.user_id
+    WHERE ca.community_id = ${c.id}
+    ORDER BY ca.created_at ASC;
+  `;
+
   const lastActive = countsRow?.last_activity_at ? new Date(countsRow.last_activity_at) : null;
 
   return (
@@ -128,6 +143,9 @@ async function CommunityInner(props: { params: Promise<Params> }) {
                       {isMember ? 'Leave' : 'Join'}
                     </button>
                   </form>
+                  {isAdmin && (
+                    <span className="px-2 py-1 rounded-md bg-purple-600/30 border border-purple-500/40 text-purple-200 text-[10px] font-medium tracking-wide uppercase">Admin</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -161,6 +179,143 @@ async function CommunityInner(props: { params: Promise<Params> }) {
                   {theme.rules.map(r => <li key={r}>{r}</li>)}
                 </ul>
               </section>
+              {isSuper && (
+                <section className="space-y-4">
+                  <h3 className="text-sm font-semibold text-white">Admins</h3>
+                  <ul className="space-y-2 text-xs">
+                    {admins.length === 0 && <li className="text-gray-500">No community admins yet.</li>}
+                    {admins.map((a: any) => (
+                      <li key={a.user_id} className="flex items-center justify-between bg-[#222226] border border-[#2e2e33] rounded-md px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-[#27272a] overflow-hidden flex items-center justify-center text-[10px] text-gray-300">
+                            {a.image_url ? <img src={a.image_url} alt="" className="h-full w-full object-cover" /> : (a.first_name?.charAt(0) || 'U')}
+                          </div>
+                          <span className="text-white font-medium">{a.first_name || a.user_id}</span>
+                          {a.user_id === SUPER_COMMUNITY_ADMIN_ID && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-700/40 text-purple-200 border border-purple-600/40">Super</span>
+                          )}
+                        </div>
+                        {a.user_id !== SUPER_COMMUNITY_ADMIN_ID && (
+                          <form action={`/api/communities/${c.slug}/admins`} method="post">
+                            <input type="hidden" name="action" value="revoke" />
+                            <input type="hidden" name="targetUserId" value={a.user_id} />
+                            <button className="text-red-400 hover:text-red-300" type="submit">Revoke</button>
+                          </form>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <details className="text-xs" data-admin-picker>
+                    <summary className="cursor-pointer text-blue-400 hover:text-blue-300 select-none">Grant Admin</summary>
+                    <div className="mt-3 space-y-3 w-80">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Search member by name..."
+                          data-admin-search
+                          className="w-full bg-[#27272a] border border-[#3f3f46] rounded px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        />
+                        <div
+                          data-results
+                          className="absolute z-20 mt-1 w-full bg-[#1f1f23] border border-[#3f3f46] rounded-md shadow-lg max-h-56 overflow-auto hidden"
+                        />
+                      </div>
+                      <form action={`/api/communities/${c.slug}/admins`} method="post" className="space-y-2" data-grant-form>
+                        <input type="hidden" name="action" value="grant" />
+                        <input type="hidden" name="targetUserId" data-target-user />
+                        <div className="text-[11px] text-gray-400 min-h-[18px]" data-selected-label></div>
+                        <button disabled className="w-full bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 text-white rounded py-1.5 text-xs font-medium" type="submit" data-grant-btn>
+                          Grant
+                        </button>
+                      </form>
+                      <p className="text-[10px] text-gray-500">Only existing members are searchable.</p>
+                    </div>
+                  </details>
+                  <Script id="admin-grant-picker" strategy="afterInteractive">{`
+(function(){
+  try {
+    const root = document.querySelector('[data-admin-picker]');
+    if(!root) return;
+    const input = root.querySelector('[data-admin-search]');
+    const resultsBox = root.querySelector('[data-results]');
+    const hiddenUser = root.querySelector('[data-target-user]');
+    const label = root.querySelector('[data-selected-label]');
+    const btn = root.querySelector('[data-grant-btn]');
+    const communitySlug = '${c.slug}';
+    let controller = null;
+    let lastQuery = '';
+    let debounceTimer;
+
+    function clearSelection(){
+      hiddenUser.value='';
+      label.textContent='';
+      btn.disabled = true;
+    }
+
+    function hideResults(){ resultsBox.classList.add('hidden'); }
+
+    function render(list){
+      if(!list.length){
+        resultsBox.innerHTML = '<div class="px-3 py-2 text-[11px] text-gray-500">No matches</div>';
+      } else {
+        var html = '';
+        for(var i=0;i<list.length;i++){
+          var u = list[i];
+          var name = (u.first_name||'User') + (u.last_name ? (' '+u.last_name):'');
+          var initials = (u.first_name||'U').charAt(0);
+            html += '<button type="button" data-pick="'+u.id+'" class="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-[#27272a] text-xs text-gray-200">'
+              + '<span class="h-6 w-6 rounded-full bg-[#27272a] flex items-center justify-center text-[10px]">'+ initials +'</span>'
+              + '<span class="flex-1 truncate">'+ name +'</span>'
+              + '</button>';
+        }
+        resultsBox.innerHTML = html;
+      }
+      resultsBox.classList.remove('hidden');
+    }
+
+    async function doSearch(q){
+      if(q === lastQuery) return;
+      lastQuery = q;
+      clearSelection();
+      if(controller) controller.abort();
+      if(!q){ hideResults(); return; }
+      controller = new AbortController();
+      try {
+        const res = await fetch('/api/communities/' + encodeURIComponent(communitySlug) + '/members/search?q=' + encodeURIComponent(q), { signal: controller.signal });
+        if(!res.ok) return;
+        const data = await res.json();
+        render((data && data.users) || []);
+      } catch(e){}
+    }
+
+    input.addEventListener('input', function(e){
+      var val = e.target.value.trim();
+      if(debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function(){ doSearch(val); }, 240);
+    });
+
+    document.addEventListener('click', function(e){
+      if(resultsBox.contains(e.target)) return;
+      if(!root.contains(e.target)) hideResults();
+    });
+
+    resultsBox.addEventListener('click', function(e){
+      var btnEl = e.target.closest('[data-pick]');
+      if(!btnEl) return;
+      var id = btnEl.getAttribute('data-pick');
+      var nameEl = btnEl.querySelector('span.flex-1');
+      hiddenUser.value = id;
+      label.textContent = 'Selected: ' + (nameEl ? nameEl.textContent : id);
+      btn.disabled = false;
+      hideResults();
+    });
+  } catch(err){
+    console.error('admin picker init failed', err);
+  }
+})();
+                  `}</Script>
+                </section>
+              )}
               {/* Activity Composer & Feed */}
               <section className="space-y-5">
                 <div className="flex items-center justify-between">
@@ -222,7 +377,7 @@ async function CommunityInner(props: { params: Promise<Params> }) {
           <div className="bg-[#1f1f23] border border-[#2d2d30] rounded-lg p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white">Upcoming Events</h3>
-              {isMember && (
+              {isAdmin && (
                 <details className="text-xs">
                   <summary className="cursor-pointer text-blue-400 hover:text-blue-300 select-none">Add</summary>
                   <form action={`/api/communities/${c.slug}/events`} method="post" className="mt-3 space-y-2 w-56">

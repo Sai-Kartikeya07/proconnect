@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import sql from '@/lib/neon';
 import { NextResponse } from 'next/server';
+import { isCommunityAdmin, isSuperCommunityAdmin } from '@/lib/communityAdmin';
 
 // GET events for a community
 export async function GET(
@@ -39,9 +40,11 @@ export async function POST(
   if (!communityRows.length) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const communityId = communityRows[0].id;
 
-  // OPTIONAL: restrict to members only
-  const membership = await sql`SELECT 1 FROM community_members WHERE community_id = ${communityId} AND user_id = ${userId} LIMIT 1;`;
-  if (!membership.length) return NextResponse.json({ error: 'Join community to create events' }, { status: 403 });
+  // Require admin (either super or community admin). If none present, allow super admin to bootstrap by granting later.
+  const admin = await isCommunityAdmin(communityId, userId);
+  if (!admin) {
+    return NextResponse.json({ error: 'Admin rights required to create events' }, { status: 403 });
+  }
 
   await sql`
     INSERT INTO community_events (community_id, created_by, title, event_date, description)
