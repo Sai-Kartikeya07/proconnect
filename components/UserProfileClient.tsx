@@ -64,7 +64,7 @@ export default function UserProfileClient({
   };
 
   const handleMessageUser = () => {
-    window.location.href = `/messages`;
+    window.location.href = `/messages?user=${profile.id}`;
   };
 
   return (

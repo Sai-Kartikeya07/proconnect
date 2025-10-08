@@ -58,7 +58,7 @@ export default function ConversationList({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="text-white font-medium truncate">
-                        {conversation.other_user_name}
+                        {conversation.other_user_name || 'User'}
                       </h3>
                       <div className="flex items-center space-x-2 flex-shrink-0">
                         {conversation.unread_count && conversation.unread_count > 0 && (
@@ -66,13 +66,15 @@ export default function ConversationList({
                             {conversation.unread_count}
                           </Badge>
                         )}
-                        <span className="text-xs text-gray-500">
-                          <ReactTimeago date={new Date(conversation.last_message_at)} />
-                        </span>
+                        {conversation.last_message_at && (
+                          <span className="text-xs text-gray-500">
+                            <ReactTimeago date={new Date(conversation.last_message_at)} />
+                          </span>
+                        )}
                       </div>
                     </div>
                     
-                    {conversation.last_message_content && (
+                    {conversation.last_message_content ? (
                       <p className="text-gray-400 text-sm truncate mt-1">
                         {conversation.last_message_sender_id === conversation.other_user_id 
                           ? '' 
@@ -80,6 +82,8 @@ export default function ConversationList({
                         }
                         {conversation.last_message_content}
                       </p>
+                    ) : (
+                      <p className="text-gray-500 italic text-sm mt-1">No messages yet</p>
                     )}
                   </div>
                 </div>

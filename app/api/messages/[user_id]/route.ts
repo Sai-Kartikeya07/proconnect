@@ -17,7 +17,15 @@ export async function GET(
 
     // Check if users can message each other
     const canMessage = await sql`
-      SELECT can_users_message(${userId}, ${user_id}) as can_message;
+      SELECT (
+        EXISTS (
+          SELECT 1 FROM follows f1 
+          WHERE f1.follower_id = ${userId} AND f1.following_id = ${user_id}
+        ) AND EXISTS (
+          SELECT 1 FROM follows f2 
+          WHERE f2.follower_id = ${user_id} AND f2.following_id = ${userId}
+        )
+      ) as can_message;
     `;
 
     if (!canMessage[0]?.can_message) {
@@ -52,7 +60,10 @@ export async function GET(
 
     // Get other user's information
     const otherUser = await sql`
-      SELECT id, first_name, image_url
+      SELECT 
+        id, 
+        COALESCE(NULLIF(TRIM(first_name), ''), NULLIF(TRIM(last_name), ''), split_part(email, '@', 1), 'User') AS first_name,
+        image_url
       FROM users 
       WHERE id = ${user_id};
     `;
@@ -93,7 +104,15 @@ export async function POST(
 
     // Check if users can message each other
     const canMessage = await sql`
-      SELECT can_users_message(${userId}, ${user_id}) as can_message;
+      SELECT (
+        EXISTS (
+          SELECT 1 FROM follows f1 
+          WHERE f1.follower_id = ${userId} AND f1.following_id = ${user_id}
+        ) AND EXISTS (
+          SELECT 1 FROM follows f2 
+          WHERE f2.follower_id = ${user_id} AND f2.following_id = ${userId}
+        )
+      ) as can_message;
     `;
 
     if (!canMessage[0]?.can_message) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,28 +31,38 @@ export default function ConversationView({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Derive a robust display name fallback (mirrors API fallback)
+  const displayName = useMemo(() => {
+    return conversation.other_user_name && conversation.other_user_name.trim().length > 0
+      ? conversation.other_user_name
+      : 'User';
+  }, [conversation.other_user_name]);
+
   useEffect(() => {
-    fetchMessages();
+    let isMounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/messages/${conversation.other_user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted) {
+            setMessages(data.messages);
+          }
+          // If conversation object lacks name but API returned other_user, we could update parent (future enhancement)
+        }
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    })();
+    return () => { isMounted = false; };
   }, [conversation.other_user_id]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const fetchMessages = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/messages/${conversation.other_user_id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages);
-      }
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +129,7 @@ export default function ConversationView({
         
         <div>
           <h2 className="text-lg font-semibold text-white">
-            {conversation.other_user_name}
+            {displayName}
           </h2>
           <p className="text-sm text-gray-400">
             Last seen <ReactTimeago date={new Date(conversation.last_message_at)} />

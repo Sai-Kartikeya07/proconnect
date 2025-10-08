@@ -58,9 +58,17 @@ export async function GET(
       // Check if they can message (mutual follow)
       if (isFollowing) {
         const mutualFollowResult = await sql`
-          SELECT can_users_message(${currentUserId}, ${user_id}) as can_message;
+          SELECT (
+            EXISTS (
+              SELECT 1 FROM follows f1 
+              WHERE f1.follower_id = ${currentUserId} AND f1.following_id = ${user_id}
+            ) AND EXISTS (
+              SELECT 1 FROM follows f2 
+              WHERE f2.follower_id = ${user_id} AND f2.following_id = ${currentUserId}
+            )
+          ) as can_message;
         `;
-        canMessage = mutualFollowResult[0]?.can_message || false;
+        canMessage = !!mutualFollowResult[0]?.can_message;
       }
     }
 

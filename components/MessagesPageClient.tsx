@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { IConversation } from "@/types/message";
@@ -16,6 +17,49 @@ export default function MessagesPageClient({ initialConversations }: MessagesPag
   const { user: _user } = useUser();
   const [conversations, setConversations] = useState<IConversation[]>(initialConversations);
   const [selectedConversation, setSelectedConversation] = useState<IConversation | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Auto-select conversation when ?user=<id> present; create stub if needed for mutual follow
+  useEffect(() => {
+    const targetUserId = searchParams.get('user');
+    if (!targetUserId) return;
+    if (selectedConversation?.other_user_id === targetUserId) return;
+
+    // Try to find existing conversation
+    let convo = conversations.find(c => c.other_user_id === targetUserId);
+    if (convo) {
+      setSelectedConversation(convo);
+      return;
+    }
+
+    // If not found, fetch/ensure conversation exists via API conversations endpoint
+    (async () => {
+      try {
+        const res = await fetch('/api/messages');
+        if (res.ok) {
+          const data = await res.json();
+          setConversations(data.conversations);
+          convo = data.conversations.find((c: IConversation) => c.other_user_id === targetUserId);
+          if (convo) setSelectedConversation(convo);
+        }
+      } catch (e) {
+        console.error('Failed to load conversations for preselect', e);
+      }
+    })();
+  }, [searchParams, conversations, selectedConversation]);
+
+  // Clean URL (optional) after selection to avoid stale share links
+  useEffect(() => {
+    if (selectedConversation) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('user')) {
+        params.delete('user');
+        const newUrl = window.location.pathname + (params.size ? `?${params.toString()}` : '');
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [selectedConversation]);
 
   const handleConversationSelect = (conversation: IConversation) => {
     setSelectedConversation(conversation);

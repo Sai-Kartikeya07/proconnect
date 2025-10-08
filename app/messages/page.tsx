@@ -12,8 +12,10 @@ async function AuthenticatedMessagesPage() {
         ELSE c.user1_id
       END as other_user_id,
       CASE 
-        WHEN c.user1_id = ${(await auth()).userId} THEN u2.first_name
-        ELSE u1.first_name
+        WHEN c.user1_id = ${(await auth()).userId} THEN
+          COALESCE(NULLIF(TRIM(u2.first_name), ''), NULLIF(TRIM(u2.last_name), ''), split_part(u2.email, '@', 1), 'User')
+        ELSE
+          COALESCE(NULLIF(TRIM(u1.first_name), ''), NULLIF(TRIM(u1.last_name), ''), split_part(u1.email, '@', 1), 'User')
       END as other_user_name,
       CASE 
         WHEN c.user1_id = ${(await auth()).userId} THEN u2.image_url

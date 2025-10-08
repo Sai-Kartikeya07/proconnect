@@ -11,6 +11,26 @@ export async function GET(_request: NextRequest) {
     }
 
     // Get all conversations for the user with last message details
+    // Ensure a conversation row exists for every mutual follow pair even if no messages yet
+    await sql`
+      WITH mutuals AS (
+        SELECT u.id AS other_id
+        FROM users u
+        JOIN follows f1 ON f1.following_id = u.id AND f1.follower_id = ${userId}
+        JOIN follows f2 ON f2.follower_id = u.id AND f2.following_id = ${userId}
+        WHERE u.id != ${userId}
+      )
+      INSERT INTO conversations (user1_id, user2_id)
+      SELECT DISTINCT LEAST(${userId}, m.other_id), GREATEST(${userId}, m.other_id)
+      FROM mutuals m
+      WHERE NOT EXISTS (
+        SELECT 1 FROM conversations c 
+        WHERE c.user1_id = LEAST(${userId}, m.other_id)
+          AND c.user2_id = GREATEST(${userId}, m.other_id)
+      )
+      ON CONFLICT DO NOTHING;
+    `;
+
     const conversations = await sql`
       SELECT 
         c.*,
@@ -18,9 +38,12 @@ export async function GET(_request: NextRequest) {
           WHEN c.user1_id = ${userId} THEN c.user2_id
           ELSE c.user1_id
         END as other_user_id,
+        -- Robust name fallback: first_name -> last_name -> email prefix -> 'User'
         CASE 
-          WHEN c.user1_id = ${userId} THEN u2.first_name
-          ELSE u1.first_name
+          WHEN c.user1_id = ${userId} THEN
+            COALESCE(NULLIF(TRIM(u2.first_name), ''), NULLIF(TRIM(u2.last_name), ''), split_part(u2.email, '@', 1), 'User')
+          ELSE
+            COALESCE(NULLIF(TRIM(u1.first_name), ''), NULLIF(TRIM(u1.last_name), ''), split_part(u1.email, '@', 1), 'User')
         END as other_user_name,
         CASE 
           WHEN c.user1_id = ${userId} THEN u2.image_url
@@ -69,7 +92,15 @@ export async function POST(request: NextRequest) {
 
     // Check if users can message each other (both must be following)
     const canMessage = await sql`
-      SELECT can_users_message(${userId}, ${receiver_id}) as can_message;
+      SELECT (
+        EXISTS (
+          SELECT 1 FROM follows f1 
+          WHERE f1.follower_id = ${userId} AND f1.following_id = ${receiver_id}
+        ) AND EXISTS (
+          SELECT 1 FROM follows f2 
+          WHERE f2.follower_id = ${receiver_id} AND f2.following_id = ${userId}
+        )
+      ) as can_message;
     `;
 
     if (!canMessage[0]?.can_message) {
